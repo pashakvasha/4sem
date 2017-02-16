@@ -49,12 +49,10 @@ int main()
 	std::map<std::string, int> m;
 	if (file.is_open())
 	{
-		std::string word;
-
 		while ( !file.eof() )
 		{
+			std::string word;
 			file >> word;
-			// Почему-то иногда дублируется последнее слово в тексте. Как это исправить?
 			//std::cout << word << "\n";
 			word = prepare(word);
 			m[word] += 1;
