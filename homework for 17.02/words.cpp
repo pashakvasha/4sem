@@ -3,20 +3,31 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <vector>
 
-const int TOP = 10;
-const int MAX_WORDS = 1000;
+#define TOP 10
+#define MAX_WORDS 1000
 
-std::string prepare(std::string& s)
-{
-	int size = s.size() - 1;
-	//std::cout << s.size() << "\n";
-	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-	if (s[size] == '.' || s[size] == ',' || s[size] == ':') {
-		s.pop_back();
+char punctiation[] = {'.', ',', '!', ':', ';', '?'};
+
+bool is_punctuation(char last_symbol) {
+	for (int j = 0; j < sizeof(punctiation) / sizeof(char); j++) 
+	{
+		if (last_symbol == punctiation[j])
+			return true;
 	}
-	//std::cout << s << "\n";
-	return s;
+	return false;
+}
+
+std::string prepare(const std::string& s)
+{
+	std::string result = s;
+	int last_symbol = s.size() - 1;
+	std::transform(s.begin(), s.end(), result.begin(), ::tolower);
+	if ( is_punctuation( result[last_symbol] ) ) {
+		result.pop_back();
+	}
+	return result;
 }
 
 
@@ -39,8 +50,12 @@ int main()
 	if (file.is_open())
 	{
 		std::string word;
-		while (!file.eof()) {
+
+		while ( !file.eof() )
+		{
 			file >> word;
+			// Почему-то иногда дублируется последнее слово в тексте. Как это исправить?
+			//std::cout << word << "\n";
 			word = prepare(word);
 			m[word] += 1;
 		}
@@ -60,16 +75,11 @@ int main()
 		i++;
 	}
 	
-	for (auto it:m)
-	{
-		std::cout<< it.first << "" << it.second << "\n";
-	}
-	
 	std::sort(s.begin(), s.end(), compare);
 
 	for (i = 0; i < TOP; i++) {
 		std::cout << i + 1 << ") " << s[i].word << " - " << s[i].count << "\n";
 	}
-
+	
 	return 0;
 }
