@@ -64,14 +64,14 @@ float  Vector2::squareLen() const
 	return x * x + y * y;
 }
 
-Vector2 Vector2::perpendicular() const
-{
-	return Vector2(-y, x);
-}
-
 Vector2 Vector2::norm() const
 {
 	return Vector2( x / this->len() , y / this->len() );
+}
+
+Vector2 Vector2::perpendicular() const
+{
+	return Vector2(-y, x);
 }
 
 Vector2& Vector2::rotate(float degree)

@@ -22,8 +22,8 @@ struct Vector2 {
 	float operator * (const Vector2& other) const;
 	float len() const;
 	float squareLen() const;
-	Vector2 perpendicular() const;
 	Vector2 norm() const;
+	Vector2 perpendicular() const;
 	Vector2& rotate(float degree);
 	Vector2 getRotated(float degree) const;
 };
