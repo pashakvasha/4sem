@@ -4,32 +4,21 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <cctype>
 
 #define TOP 10
 #define MAX_WORDS 1000
-
-char punctiation[] = {'.', ',', '!', ':', ';', '?'};
-
-bool is_punctuation(char last_symbol) {
-	for (int j = 0; j < sizeof(punctiation) / sizeof(char); j++) 
-	{
-		if (last_symbol == punctiation[j])
-			return true;
-	}
-	return false;
-}
 
 std::string prepare(const std::string& s)
 {
 	std::string result = s;
 	int last_symbol = s.size() - 1;
 	std::transform(s.begin(), s.end(), result.begin(), ::tolower);
-	if ( is_punctuation( result[last_symbol] ) ) {
+	if ( ispunct( result[last_symbol] ) ) {
 		result.pop_back();
 	}
 	return result;
 }
-
 
 struct Statistics {
 	int count;
@@ -47,13 +36,13 @@ int main()
 {
 	std::ifstream file("text.txt");
 	std::map<std::string, int> m;
+	
 	if (file.is_open())
 	{
 		while ( !file.eof() )
 		{
 			std::string word;
 			file >> word;
-			//std::cout << word << "\n";
 			word = prepare(word);
 			m[word] += 1;
 		}
