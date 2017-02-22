@@ -64,27 +64,29 @@ float  Vector2::squareLen() const
 	return x * x + y * y;
 }
 
-Vector2 Vector2::norm() const
-{
-	return Vector2( x / this->len() , y / this->len() );
-}
-
 Vector2 Vector2::perpendicular() const
 {
 	return Vector2(-y, x);
 }
 
+Vector2 Vector2::norm() const
+{
+	return Vector2( x / this->len() , y / this->len() );
+}
+
 Vector2& Vector2::rotate(float degree)
 {
 	float x_ = x, y_ = y;
-	x = x_ * cos(degree / 180 * PI) - y_ * sin(degree / 180 * PI);
-	y = y_ * cos(degree / 180 * PI) + x_ * sin(degree / 180 * PI);
+	float angle = degree / 180 * PI;
+	x = x_ * cos(angle) - y_ * sin(angle);
+	y = y_ * cos(angle) + x_ * sin(angle);
 	return *this;
 }
 
 Vector2 Vector2::getRotated(float degree) const
 {
-	return Vector2(x * cos(degree / 180 * PI) - y * sin(degree / 180 * PI), y * cos(degree / 180 * PI) + x * sin(degree / 180 * PI));
+	float angle = degree / 180 * PI;
+	return Vector2(x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle));
 }
 
 std::ostream& operator <<(std::ostream& stream, const Vector2& v)
