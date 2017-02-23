@@ -71,6 +71,10 @@ Vector2 Vector2::perpendicular() const
 
 Vector2 Vector2::norm() const
 {
+	// здесь не обязательно писать this. чтобы дважды не вычислять корень из числа, который относительно дорогой по времени,
+	// то можно сохранить в отдельную переменную длину сначала
+	/// У вас же уже переопределен оператор деления на число:
+	/// return Vector2(x, y) / len();
 	return Vector2( x / this->len() , y / this->len() );
 }
 
@@ -85,6 +89,9 @@ Vector2& Vector2::rotate(float degree)
 
 Vector2 Vector2::getRotated(float degree) const
 {
+	// лучше не дублировать один и тот же код, а написать как-то так:
+	// return Vector(x, y).rotate(degree);
+	// либо наоборот rotate как-то через getRotated переписать.
 	float angle = degree / 180 * PI;
 	return Vector2(x * cos(angle) - y * sin(angle), y * cos(angle) + x * sin(angle));
 }
