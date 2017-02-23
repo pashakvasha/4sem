@@ -7,6 +7,28 @@
 struct Vector2 {
 	float x;
 	float y;
+	
+	/*
+		FIXIT: лучше реализацию вынести с cpp файл:
+		
+		Vector2::Vector2(float x, float y): x(x), y(y)
+		{}
+		
+		так будет работать.
+		Либо ещё можно написать:
+		
+		Vector2::Vector2(float x, float y)
+		{
+			this->x = x;
+			this->y = y;
+		}
+		
+		+ ещё конечно же нужен конструктор без параметров:
+		
+		Vector2()
+		{
+		}
+	*/
 	Vector2(float _x, float _y) {
 		x = _x;
 		y = _y;
