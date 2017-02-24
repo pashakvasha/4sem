@@ -12,10 +12,8 @@
 std::string prepare(const std::string& s)
 {
 	std::string result = s;
-	int last_symbol = s.size() - 1;
-	std::transform(s.begin(), s.end(), result.begin(), ::tolower);
-	// можно писать result.back() вместо result[s.size() - 1] ... 
-	if ( ispunct( result[last_symbol] ) ) {
+	std::transform(s.begin(), s.end(), result.begin(), ::tolower); 
+	if ( ispunct( result.back() ) ) {
 		result.pop_back();
 	}
 	return result;
@@ -55,9 +53,8 @@ int main()
 	s.resize(MAX_WORDS);
 	
 	int i = 0;
-	
-	// чтобы не происходило лишнего копировая во временную переменную it, лучше написать for (const auto& it : m)
-	for (auto it:m)
+
+	for (const auto& it : m)
 	{
 		s[i].word = it.first;
 		s[i].count = it.second;
