@@ -82,6 +82,9 @@ Vector2 Vector2::perpendicular() const
 
 Vector2 Vector2::norm() const
 {
+	/*
+	не обязательно здесь писать this ... просто / len();
+	*/
 	return Vector2(x, y) / this->len();
 }
 
