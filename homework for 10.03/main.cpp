@@ -72,6 +72,11 @@ int main()
 					}
 				} break;
 
+				/*
+					event'ы работают медленнее, чем просто проверки isKeyPressed и т.п.
+					т.е. если зажать кнопку и держать, то теоретически может лагать из-за этого
+				*/
+					
 				case sf::Event::MouseButtonPressed:
 				{
 					if ( (event.key.code == sf::Mouse::Left) && (currentBul < MAX_BULLET_COUNT) )
@@ -113,6 +118,11 @@ int main()
 			}
 		}
 		
+		/*
+		fixit: вам нужно изменить время dt, которое прошло за кадр.
+		оно может отличаться между кадрами ... например, если вдруг что-то начнёт накатывать обновления неожиданное,
+		то ваш герой будет двигаться медленнее, и пули тоже ... т.к. процессор будет активно занят чем-то ещё 
+		*/
 		map.update(1);
 
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
@@ -129,6 +139,7 @@ int main()
 		hero.setRotation(angle);
 		hero.setPosition(map.hero.pos);
 
+		// fixit: i < map.bullets.size() ... а ещё лучше for (const auto& b : map.bullets)
 		for (int i = 0; i < currentBul; i++)
 		{
 			bul.setPosition(map.bullets[i].pos);
@@ -137,6 +148,8 @@ int main()
 		}
 		window.draw(text);
 		window.draw(hero);
+		
+		// лучше вместо этого флажка вызвать ф-ю ... вроде isMouseButtonPressed называется
 		if (MOUSE_RIGHT_PRESSED)
 		{
 			window.draw(laser);
