@@ -14,19 +14,20 @@ void Hero::update(float dt)
 
 void Map::update(float dt)
 {
+	int i = 0;
 	for (auto& b : bullets)
 	{
 		if ((b.pos.x > size.x) || (b.pos.y > size.y)
 			|| (b.pos.x < 0) || (b.pos.y < 0))
 		{
-			std::swap(b, bullets.back());
-			bullets.pop_back();
+			bullets.erase(bullets.begin() + i);
 			currentBul--;
 		}
 		else
 		{
 			b.update(dt);
 		}
+		i++;
 	}
 	if (hero.pos.x == size.x && hero.velocity.x > 0)
 		hero.velocity.x = 0;
