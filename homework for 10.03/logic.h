@@ -2,8 +2,8 @@
 #include <SFML\Graphics.hpp>
 
 const int MAX_BULLET_COUNT = 10;
-const int MAX_HERO_VELOCITY = 10;
-const float MAX_BULLET_VELOCITY = 0.05f;
+const float MAX_HERO_VELOCITY = 0.51;
+const float MAX_BULLET_VELOCITY = 0.01f;
 const float Pi = 3.14159f;
 
 struct Laser {

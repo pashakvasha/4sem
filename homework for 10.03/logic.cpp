@@ -1,11 +1,5 @@
 #include "logic.h"
 
-/*
-fixit: вам не нужна эта глобальная переменная. можно просто вызвать bullets.size()
-*/
-
-extern int currentBul;
-
 void Bullet::update(float dt)
 {
 	pos += velocity * dt;
@@ -24,9 +18,10 @@ void Map::update(float dt)
 		if ((b.pos.x > size.x) || (b.pos.y > size.y)
 			|| (b.pos.x < 0) || (b.pos.y < 0))
 		{
-			/* вы где-то в коде удаляли через swap с последним. это эффективнее */
+			//�������� ����� swap �� ������ ����������� ���������
+			//std::swap(b, bullets.back());
+			//bullets.pop_back();
 			bullets.erase(bullets.begin() + i);
-			currentBul--;
 		}
 		else
 		{
@@ -34,16 +29,13 @@ void Map::update(float dt)
 		}
 		i++;
 	}
-	
-	/* не уверен, что проверка на строгое равенство отработает корректно ... если за один шаг dt герой перескочит пиксель 0,
-	то герой спокойно себе вылетит с поля*/
-	if (hero.pos.x == size.x && hero.velocity.x > 0)
+	if (hero.pos.x + hero.radius.x / 2 >= size.x && hero.velocity.x > 0)
 		hero.velocity.x = 0;
-	if (hero.pos.x == 0 && hero.velocity.x < 0)
+	if (hero.pos.x - hero.radius.x / 2 <= 0 && hero.velocity.x < 0)
 		hero.velocity.x = 0;
-	if (hero.pos.y == 0 && hero.velocity.y < 0)
+	if (hero.pos.y - hero.radius.y / 4 <= 0 && hero.velocity.y < 0)
 		hero.velocity.y = 0;
-	if (hero.pos.y == size.y && hero.velocity.y > 0)
+	if (hero.pos.y + hero.radius.y / 4 >= size.y && hero.velocity.y > 0)
 		hero.velocity.y = 0;
 
 	hero.update(dt);

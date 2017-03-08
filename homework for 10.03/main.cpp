@@ -5,13 +5,12 @@
 #include <algorithm>
 #include "logic.h"
 
-int currentBul = 0;
-bool MOUSE_RIGHT_PRESSED;
-
 sf::Vector2f getRotated(float degree, sf::Vector2f vector);
 
 int main()
 {
+	sf::Clock clock;
+
 	sf::Font font;
 	font.loadFromFile("arial.ttf");
 
@@ -46,8 +45,8 @@ int main()
 
 	while (window.isOpen())
 	{
-
-		sf::Text text("the rest of the bullet: " + std::to_string(MAX_BULLET_COUNT - currentBul), font);
+		sf::Time time = clock.getElapsedTime();
+		sf::Text text("the rest of the bullets: " + std::to_string(MAX_BULLET_COUNT - map.bullets.size()), font);
 		text.setCharacterSize(20);
 		text.setStyle(sf::Text::Bold);
 		text.setStyle(sf::Text::Underlined);
@@ -64,34 +63,17 @@ int main()
 					window.close();
 				} break;
 
-				case sf::Event::MouseButtonReleased:
-				{
-					if (event.key.code == sf::Mouse::Right)
-					{
-						MOUSE_RIGHT_PRESSED = false;
-					}
-				} break;
-
-				/*
-					event'ы работают медленнее, чем просто проверки isKeyPressed и т.п.
-					т.е. если зажать кнопку и держать, то теоретически может лагать из-за этого
-				*/
-					
 				case sf::Event::MouseButtonPressed:
 				{
-					if ( (event.key.code == sf::Mouse::Left) && (currentBul < MAX_BULLET_COUNT) )
+					if ( (event.key.code == sf::Mouse::Left) && (map.bullets.size() < MAX_BULLET_COUNT) )
 					{
 						Bullet bull;
 						bull.pos = map.hero.pos;
 						bull.velocity = getRotated(angle, sf::Vector2f(0, -MAX_BULLET_VELOCITY));
 						bull.angle = angle;
 						map.bullets.push_back(bull);
-						currentBul++;
 					}
-					if (event.key.code == sf::Mouse::Right)
-					{
-						MOUSE_RIGHT_PRESSED = true;
-					}
+					
 				} break;
 
 				case sf::Event::KeyPressed:
@@ -116,14 +98,14 @@ int main()
 			default:
 				break;
 			}
+		} 
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+		{
+			window.draw(laser);
 		}
-		
-		/*
-		fixit: вам нужно изменить время dt, которое прошло за кадр.
-		оно может отличаться между кадрами ... например, если вдруг что-то начнёт накатывать обновления неожиданное,
-		то ваш герой будет двигаться медленнее, и пули тоже ... т.к. процессор будет активно занят чем-то ещё 
-		*/
-		map.update(1);
+
+
+		map.update(time.asSeconds());
 
 		sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
 		sf::Vector2f center = hero.getPosition();
@@ -139,21 +121,14 @@ int main()
 		hero.setRotation(angle);
 		hero.setPosition(map.hero.pos);
 
-		// fixit: i < map.bullets.size() ... а ещё лучше for (const auto& b : map.bullets)
-		for (int i = 0; i < currentBul; i++)
+		for (const auto& b : map.bullets)
 		{
-			bul.setPosition(map.bullets[i].pos);
-			bul.setRotation(map.bullets[i].angle);
+			bul.setPosition(b.pos);
+			bul.setRotation(b.angle);
 			window.draw(bul);
 		}
 		window.draw(text);
 		window.draw(hero);
-		
-		// лучше вместо этого флажка вызвать ф-ю ... вроде isMouseButtonPressed называется
-		if (MOUSE_RIGHT_PRESSED)
-		{
-			window.draw(laser);
-		}
 		window.display();
 	}
 	return 0;
