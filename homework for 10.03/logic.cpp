@@ -18,7 +18,7 @@ void Map::update(float dt)
 		if ((b.pos.x > size.x) || (b.pos.y > size.y)
 			|| (b.pos.x < 0) || (b.pos.y < 0))
 		{
-			//Удаление через swap не всегда срабатывает корректно
+			//deletion using swap sometimes works incorrectly
 			//std::swap(b, bullets.back());
 			//bullets.pop_back();
 			bullets.erase(bullets.begin() + i);
