@@ -17,7 +17,6 @@ std::vector<sf::Color> colors = {
 
 int main()
 {
-	//Physics works very badly, especially with large radii.
 	Map map;
 	map.size = sf::Vector2i(GetSystemMetrics(SM_CXSCREEN) / 2, GetSystemMetrics(SM_CYSCREEN) / 2);
 	sf::CircleShape circle(50);
@@ -48,7 +47,7 @@ int main()
 				{
 					Ball ball;
 					ball.position = Vector2(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-					ball.velocity = MAX_VELOCITY * Vector2(cos(rand() % 2 * PI ), cos(rand() % 2 * PI));
+					ball.velocity = Vector2(rand() % MAX_VELOCITY, rand() % MAX_VELOCITY).rotate(rand() % 360);
 					ball.type = rand() % 5;
 					ball.radius = ball.type * MIN_RADUIS;
 					ball.mass = ball.radius;

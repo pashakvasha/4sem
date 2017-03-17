@@ -33,9 +33,9 @@ void Map::update(float dt)
 	{
 		for (int j = i + 1; j < balls.size(); j++)
 		{
-			Vector2 d = balls[j].position - balls[i].position;
+			Vector2 d = balls[j].position - balls[i].position + Vector2(balls[j].radius - balls[i].radius, balls[j].radius - balls[i].radius);
 			Vector2 dv = balls[j].velocity - balls[i].velocity;
-			if ( (d.len() <= balls[j].radius + balls[j].radius) && (dv * d < 0) )
+			if ( (d.len() <= balls[i].radius + balls[j].radius) && (dv * d < 0) )
 			{
 				float m = 1 / balls[j].mass + 1 / balls[i].mass;
 				Vector2 dp = 2 * (dv / m) * d.norm() * d.norm();
