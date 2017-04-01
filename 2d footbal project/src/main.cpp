@@ -7,8 +7,10 @@ const float V = 4000;
 int CURRENT_PLAYER = 0;
 const int PLAYERS_AMOUNT = 4;
 int BALL_PLAYER = -1;
+int PREVIOUS_BALL_PLAYER = -1;
 const int MAX_BALL_VELOCITY = 500;
 const int MAX_BALL_ACCELERARION = 300;
+float CURRENT_FRAME = 0;
 
 struct Ball 
 {
@@ -32,6 +34,7 @@ struct Player
 	Vector2 pos;
 	Vector2 velocity;
 	Vector2 radius;
+	sf::Texture texture;
 	float size;
 	void update(float dt)
 	{
@@ -43,6 +46,7 @@ struct Map
 {
 	Ball ball;
 	std::vector<Player> players;
+	std::vector<Player> opponentPlayers;
 	Vector2 size;
 	void update(float dt)
 	{
@@ -61,16 +65,22 @@ struct Map
 		
 		for (int i = 0; ( i < players.size() ) && ( BALL_PLAYER < 0 ); i++)
 		{
-			Vector2 d = ball.pos - players[i].pos + Vector2(5, players[i].radius.y);
-			if ( d.len() < ball.radius.x + players[i].radius.x)
+			if (i != PREVIOUS_BALL_PLAYER)
 			{
-				BALL_PLAYER = i;
-			}
-			else
-			{
-				BALL_PLAYER = -1;
+				Vector2 d = ball.pos - players[i].pos - Vector2(0, players[i].radius.y);
+				if (d.len() < ball.radius.x + players[i].radius.x)
+				{
+					BALL_PLAYER = i;
+					CURRENT_PLAYER = BALL_PLAYER;
+					PREVIOUS_BALL_PLAYER = -1;
+				}
+				else
+				{
+					BALL_PLAYER = -1;
+				}
 			}
 		}
+
 		if (BALL_PLAYER >= 0)
 		{
 			ball.pos = players[BALL_PLAYER].pos + Vector2(5, players[BALL_PLAYER].radius.y);
@@ -107,14 +117,25 @@ int main()
 	float last_time = 0;
 
 	sf::Texture texturePlayer;
-	texturePlayer.loadFromFile("player1.png");
+	texturePlayer.loadFromFile("player1_left_0.png");
 	texturePlayer.setSmooth(true);
 	sf::Sprite man(texturePlayer);
 
+	sf::Texture textureOpponent;
+	textureOpponent.loadFromFile("player2.png");
+	textureOpponent.setSmooth(true);
+	sf::Sprite Opponent(textureOpponent);
+
+	sf::Texture texturePointer;
+	texturePointer.loadFromFile("pointer.png");
+	texturePointer.setSmooth(true);
+	sf::Sprite pointer(texturePointer);
 
 	sf::Texture textureField;
-	textureField.loadFromFile("football.png");
+	textureField.loadFromFile("field.png");
+	textureField.setSmooth(true);
 	sf::Sprite field(textureField);
+	field.setScale(1.25f, 1.75f);
 
 	sf::Texture textureBall;
 	textureBall.loadFromFile("ball.png");
@@ -124,9 +145,11 @@ int main()
 	for (size_t i = 0; i < PLAYERS_AMOUNT; i++)
 	{
 		Player player;
+		Player opponent;
 		player.pos = Vector2(i * 100 + 50, i * 100 + 50);
-		player.size = 0.4f;
+		opponent.pos = Vector2(800 - i * 100 - 50, i * 100 + 50);
 
+		map.opponentPlayers.push_back(opponent);
 		map.players.push_back(player);
 	}
 
@@ -139,7 +162,7 @@ int main()
 		text.setCharacterSize(20);
 		text.setStyle(sf::Text::Bold);
 		text.setStyle(sf::Text::Underlined);
-		text.setColor(sf::Color::Red);
+		text.setColor(sf::Color::White);
 
 		for (auto& hero : map.players)
 		{
@@ -195,13 +218,18 @@ int main()
 					map.ball.velocity = MAX_BALL_VELOCITY * (map.players[k].pos - map.players[CURRENT_PLAYER].pos).norm();
 					map.ball.acceleration = -MAX_BALL_ACCELERARION * map.ball.velocity.norm();
 					BALL_PLAYER = -1;
-					//FREE_BALL = true;
-					//CURRENT_PLAYER = BALL_PLAYER;
+					PREVIOUS_BALL_PLAYER = CURRENT_PLAYER;
 				}
 			}
 			default:
 				break;
 			}
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			texturePlayer.loadFromFile("player1_left_1.png");
+			texturePlayer.setSmooth(true);
+			sf::Sprite man(texturePlayer);
 		}
 
 		map.update(time.asSeconds() - last_time);
@@ -209,14 +237,30 @@ int main()
 
 		window.draw(field);
 		
-		for (auto& hero : map.players)
+		for (int i = 0; i < map.players.size(); i++)
 		{
-			man.setPosition(hero.pos.x, hero.pos.y);
-			hero.size = (20 * hero.pos.y / (map.size.y + 1)) * 0.02f + 0.3f;
-			man.setScale(hero.size, hero.size);
-			hero.radius = Vector2(hero.size * man.getTexture()->getSize().x / 2, hero.size * man.getTexture()->getSize().y / 2);
-			man.setOrigin(hero.size * man.getTexture()->getSize().x / 2, hero.size * man.getTexture()->getSize().y / 2);
+			man.setPosition(map.players[i].pos.x, map.players[i].pos.y);
+			map.players[i].size = (20 * map.players[i].pos.y / (map.size.y + 1)) * 0.02f + 0.3f;
+			man.setScale(map.players[i].size, map.players[i].size);
+			map.players[i].radius = Vector2(map.players[i].size * man.getTexture()->getSize().x / 2, map.players[i].size * man.getTexture()->getSize().y / 2);
+			man.setOrigin(map.players[i].size * man.getTexture()->getSize().x / 2, map.players[i].size * man.getTexture()->getSize().y / 2);
+			if (i == CURRENT_PLAYER)
+			{
+				pointer.setPosition(map.players[i].pos.x - map.players[i].radius.x / 2, map.players[i].pos.y - map.players[i].radius.y);
+				pointer.setScale(0.3 * map.players[i].size, 0.3 * map.players[i].size);
+				window.draw(pointer);
+			}
 			window.draw(man);
+		}
+
+		for (int i = 0; i < map.players.size(); i++)
+		{
+			Opponent.setPosition(map.opponentPlayers[i].pos.x, map.opponentPlayers[i].pos.y);
+			map.opponentPlayers[i].size = (20 * map.opponentPlayers[i].pos.y / (map.size.y + 1)) * 0.02f + 0.3f;
+			Opponent.setScale(map.opponentPlayers[i].size, map.opponentPlayers[i].size);
+			map.players[i].radius = Vector2(map.opponentPlayers[i].size * Opponent.getTexture()->getSize().x / 2, map.opponentPlayers[i].size * Opponent.getTexture()->getSize().y / 2);
+			Opponent.setOrigin(map.opponentPlayers[i].size * Opponent.getTexture()->getSize().x / 2, map.opponentPlayers[i].size * Opponent.getTexture()->getSize().y / 2);
+			window.draw(Opponent);
 		}
 
 		map.ball.size = (20 * map.ball.pos.y / (map.size.y + 1)) * 0.02f + 0.3f;
