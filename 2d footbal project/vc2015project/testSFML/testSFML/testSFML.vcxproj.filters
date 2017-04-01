@@ -12,10 +12,14 @@
     <ClCompile Include="..\..\..\src\Vector2.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\draw.cpp" />
+    <ClCompile Include="..\..\..\src\logic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\Vector2.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\draw.h" />
+    <ClInclude Include="..\..\..\src\logic.h" />
   </ItemGroup>
 </Project>
