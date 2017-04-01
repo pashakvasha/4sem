@@ -116,16 +116,6 @@ int main()
 
 	float last_time = 0;
 
-	sf::Texture texturePlayer;
-	texturePlayer.loadFromFile("player1_left_0.png");
-	texturePlayer.setSmooth(true);
-	sf::Sprite man(texturePlayer);
-
-	sf::Texture textureOpponent;
-	textureOpponent.loadFromFile("player2.png");
-	textureOpponent.setSmooth(true);
-	sf::Sprite Opponent(textureOpponent);
-
 	sf::Texture texturePointer;
 	texturePointer.loadFromFile("pointer.png");
 	texturePointer.setSmooth(true);
@@ -146,6 +136,13 @@ int main()
 	{
 		Player player;
 		Player opponent;
+
+		player.texture.loadFromFile("player1_left_0.png");
+		player.texture.setSmooth(true);
+
+		opponent.texture.loadFromFile("player2.png");
+		opponent.texture.setSmooth(true);
+
 		player.pos = Vector2(i * 100 + 50, i * 100 + 50);
 		opponent.pos = Vector2(800 - i * 100 - 50, i * 100 + 50);
 
@@ -183,18 +180,22 @@ int main()
 			{
 				if (event.key.code == sf::Keyboard::Left)
 				{
+					map.players[CURRENT_PLAYER].texture.loadFromFile("player1_left_0.png");
 					map.players[CURRENT_PLAYER].velocity = Vector2(-V, 0);
 				}
 				if (event.key.code == sf::Keyboard::Right)
 				{
+					map.players[CURRENT_PLAYER].texture.loadFromFile("player1_right_0.png");
 					map.players[CURRENT_PLAYER].velocity = Vector2(V, 0);
 				}
 				if (event.key.code == sf::Keyboard::Up)
 				{
+					map.players[CURRENT_PLAYER].texture.loadFromFile("player1_up_0.png");
 					map.players[CURRENT_PLAYER].velocity = V * Vector2(1, -1);
 				}
 				if (event.key.code == sf::Keyboard::Down)
 				{
+					map.players[CURRENT_PLAYER].texture.loadFromFile("player1_down_0.png");
 					map.players[CURRENT_PLAYER].velocity = -V * Vector2(1, -1);
 				}
 				if (event.key.code == sf::Keyboard::Q)
@@ -225,12 +226,12 @@ int main()
 				break;
 			}
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		/*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
 			texturePlayer.loadFromFile("player1_left_1.png");
 			texturePlayer.setSmooth(true);
 			sf::Sprite man(texturePlayer);
-		}
+		}*/
 
 		map.update(time.asSeconds() - last_time);
 		
@@ -239,6 +240,7 @@ int main()
 		
 		for (int i = 0; i < map.players.size(); i++)
 		{
+			sf::Sprite man(map.players[i].texture);
 			man.setPosition(map.players[i].pos.x, map.players[i].pos.y);
 			map.players[i].size = (20 * map.players[i].pos.y / (map.size.y + 1)) * 0.02f + 0.3f;
 			man.setScale(map.players[i].size, map.players[i].size);
@@ -246,15 +248,16 @@ int main()
 			man.setOrigin(map.players[i].size * man.getTexture()->getSize().x / 2, map.players[i].size * man.getTexture()->getSize().y / 2);
 			if (i == CURRENT_PLAYER)
 			{
-				pointer.setPosition(map.players[i].pos.x - map.players[i].radius.x / 2, map.players[i].pos.y - map.players[i].radius.y);
+				pointer.setPosition(map.players[i].pos.x, map.players[i].pos.y - map.players[i].radius.y);
 				pointer.setScale(0.3 * map.players[i].size, 0.3 * map.players[i].size);
 				window.draw(pointer);
 			}
 			window.draw(man);
 		}
 
-		for (int i = 0; i < map.players.size(); i++)
+		for (int i = 0; i < map.opponentPlayers.size(); i++)
 		{
+			sf::Sprite Opponent(map.opponentPlayers[i].texture);
 			Opponent.setPosition(map.opponentPlayers[i].pos.x, map.opponentPlayers[i].pos.y);
 			map.opponentPlayers[i].size = (20 * map.opponentPlayers[i].pos.y / (map.size.y + 1)) * 0.02f + 0.3f;
 			Opponent.setScale(map.opponentPlayers[i].size, map.opponentPlayers[i].size);
