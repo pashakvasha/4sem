@@ -1,13 +1,21 @@
-﻿  main.cpp
+﻿  logic.cpp
+c:\users\павел\desktop\2d footbal project\src\Vector2.h(5): warning C4305: инициализация: усечение из "double" к "float"
+..\..\..\src\logic.cpp(25): warning C4244: аргумент: преобразование "unsigned int" в "float", возможна потеря данных
+..\..\..\src\logic.cpp(25): warning C4244: аргумент: преобразование "double" в "float", возможна потеря данных
+..\..\..\src\logic.cpp(51): warning C4244: аргумент: преобразование "unsigned int" в "float", возможна потеря данных
+..\..\..\src\logic.cpp(118): warning C4018: <: несоответствие типов со знаком и без знака
+..\..\..\src\logic.cpp(165): warning C4244: аргумент: преобразование "std::size_t" в "float", возможна потеря данных
+..\..\..\src\logic.cpp(171): warning C4244: аргумент: преобразование "std::size_t" в "float", возможна потеря данных
+  main.cpp
 c:\users\павел\desktop\2d footbal project\src\Vector2.h(5): warning C4305: инициализация: усечение из "double" к "float"
 ..\..\..\src\main.cpp(21): warning C4244: аргумент: преобразование "float" в "unsigned int", возможна потеря данных
 ..\..\..\src\main.cpp(48): warning C4018: <: несоответствие типов со знаком и без знака
-..\..\..\src\main.cpp(85): warning C4244: аргумент: преобразование "const int" в "float", возможна потеря данных
+..\..\..\src\main.cpp(105): warning C4244: аргумент: преобразование "const int" в "float", возможна потеря данных
 ..\..\..\src\main.cpp(38): warning C4101: event: неиспользованная локальная переменная
   Создание кода
-  52 of 234 functions (22.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    12 functions had inline decision re-evaluated but remain unchanged
+  4 of 239 functions ( 1.7%) were compiled, the rest were copied from previous compilation.
+    2 functions were new in current compilation
+    3 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   testSFML.vcxproj -> C:\Users\Павел\Desktop\2d footbal project\vc2015project\testSFML\..\..\bin\testSFML.exe
   testSFML.vcxproj -> C:\Users\Павел\Desktop\2d footbal project\vc2015project\testSFML\..\..\bin\testSFML.pdb (Full PDB)

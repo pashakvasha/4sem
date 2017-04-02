@@ -6,6 +6,19 @@ extern int BALL_PLAYER;
 extern int PREVIOUS_BALL_PLAYER;
 extern int CURRENT_PLAYER;
 
+std::string getDirection(const Vector2& v)
+{
+	Vector2 right(1, 0);
+	double cos = (right * v) / (right.len() * v.len());
+	if (cos >= 0.5 && cos <= 1)
+		return "right";
+	if (cos >= -1 && cos <= -0.5)
+		return "left";
+	if (cos > -0.5 && cos < 0.5 && v.y > 0)
+		return "up";
+	return "down";	
+}
+
 void Ball::update(float dt)
 {
 	size = (20 * pos.y / (MAP_SIZE.y + 1)) * 0.02f + 0.3f;
@@ -16,6 +29,20 @@ void Ball::update(float dt)
 		velocity += acceleration * dt;
 	else
 		velocity = Vector2(0, 0);
+}
+
+bool Player::in_zone()
+{
+	if ((pos.x < zone_end.x && pos.x > zone_begin.x) && (pos.y < zone_end.y && pos.y > zone_begin.y))
+		return true;
+	return false;
+}
+
+bool Ball::in_zone(struct Player hero)
+{
+	if ((pos.x < hero.zone_end.x && pos.x > hero.zone_begin.x) && (pos.y < hero.zone_end.y && pos.y > hero.zone_begin.y))
+		return true;
+	return false;
 }
 
 void Player::update(float dt)
@@ -31,27 +58,9 @@ void Player::update(float dt)
 		currentFrame -= 4;
 	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
 
-	if ( v.x == 1 && v.y == 0)
-	{
-		texture.loadFromFile("player" + std::to_string(teamID) + "_right_" + std::to_string((int)currentFrame / 2) + ".png");
-	}
+	if (velocity.len() != 0)
+		texture.loadFromFile("player" + std::to_string(teamID) + "_" + getDirection(velocity) + "_" + std::to_string((int)currentFrame) + ".png");
 
-	if (v.x == -1 && v.y == 0)
-	{
-		texture.loadFromFile("player" + std::to_string(teamID) + "_left_" + std::to_string((int)currentFrame / 2) + ".png");
-	}
-
-	Vector2 d = Vector2(1, -1).norm();
-	if (v.x == d.x && v.y == d.y)
-	{
-		texture.loadFromFile("player" + std::to_string(teamID) + "_up_" + std::to_string((int)currentFrame) + ".png");
-	}
-
-	d = Vector2(-1, 1).norm();
-	if (v.x == d.x && v.y == d.y)
-	{
-		texture.loadFromFile("player" + std::to_string(teamID) + "_down_" + std::to_string((int)currentFrame) + ".png");
-	}
 }
 
 void Map::update(float dt)
@@ -71,6 +80,38 @@ void Map::update(float dt)
 
 	for (auto& hero : opponentPlayers)
 	{
+		hero.update(dt);
+	}
+
+	bool RUN_TO_BALL = false;
+	for (auto& hero : opponentPlayers)
+	{
+		if (!hero.in_zone())
+		{
+			hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
+		}
+		if (hero.in_zone())
+		{
+			if (ball.in_zone(hero) && !RUN_TO_BALL)
+			{
+				hero.velocity = V * (ball.pos - hero.pos).norm();
+				RUN_TO_BALL = true;
+				if (abs((ball.pos - hero.pos).x) < V / 2 && abs((ball.pos - hero.pos).y) < V / 2)
+					hero.velocity = ball.pos - hero.pos;
+			}
+			else if (RUN_TO_BALL)
+			{
+				hero.velocity = V * (ball.pos - hero.pos).norm();
+				if (abs((ball.pos - hero.pos).x) < 2 * V && abs((ball.pos - hero.pos).y) <  2 * V)
+					hero.velocity = Vector2(0, 0);
+			}
+			else
+			{
+				hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
+				if (abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).x) < V  && abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).y) < V)
+					hero.velocity = (hero.zone_end + hero.zone_begin) / 2 - hero.pos;
+			}
+		}
 		hero.update(dt);
 	}
 

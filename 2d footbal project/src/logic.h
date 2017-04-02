@@ -7,7 +7,7 @@ const int MAX_BALL_VELOCITY = 500;
 const int MAX_BALL_ACCELERATION = 300;
 const int MAX_PLAYER_ACCELERATION = 500;
 const int MAX_PLAYER_VELOCITY = 100;
-const int PLAYERS_AMOUNT = 4;
+const int PLAYERS_AMOUNT = 6;
 const float V = 70;
 
 struct Ball
@@ -17,6 +17,7 @@ struct Ball
 	Vector2 velocity;
 	Vector2 acceleration;
 	Vector2 radius;
+	bool in_zone(struct Player hero);
 	float size;
 	float angle;
 	void update(float dt);
@@ -27,6 +28,11 @@ struct Player
 	Vector2 pos;
 	Vector2 velocity;
 	Vector2 radius;
+
+	Vector2 zone_begin;
+	Vector2 zone_end;
+	bool in_zone();
+
 	char teamID;
 	float currentFrame;
 	sf::Texture texture;

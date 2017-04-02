@@ -52,6 +52,25 @@ int main()
 			map.opponentPlayers[i].velocity = Vector2(0, 0);
 		}
 
+		//defenders
+		map.opponentPlayers[0].zone_begin = Vector2(map.size.x / 2, 0);
+		map.opponentPlayers[0].zone_end = Vector2(map.size.x, map.size.y / 3);
+
+		map.opponentPlayers[1].zone_begin = Vector2(map.size.x / 2, 2 * map.size.y / 3);
+		map.opponentPlayers[1].zone_end = Vector2(map.size.x, map.size.y);
+
+		map.opponentPlayers[2].zone_begin = Vector2(3 * map.size.x / 5, map.size.y / 4);
+		map.opponentPlayers[2].zone_end = Vector2(map.size.x, 3 * map.size.y / 4);
+		//mildfielder
+		map.opponentPlayers[3].zone_begin = Vector2(2 * map.size.x / 10, 0);
+		map.opponentPlayers[3].zone_end = Vector2(8 * map.size.x / 10, map.size.y);
+		//forward
+		map.opponentPlayers[4].zone_begin = Vector2(0, 0);
+		map.opponentPlayers[4].zone_end = Vector2(map.size.x / 2, map.size.y / 2);
+
+		map.opponentPlayers[5].zone_begin = Vector2(0, map.size.y / 2);
+		map.opponentPlayers[5].zone_end = Vector2(map.size.x / 2, map.size.y);
+
 		sf::Time time = clock.getElapsedTime();
 		sf::Event event;
 
@@ -82,10 +101,13 @@ int main()
 					{
 						k = rand() % PLAYERS_AMOUNT;
 					}
-					map.ball.velocity = MAX_BALL_VELOCITY * (map.players[k].pos - map.players[CURRENT_PLAYER].pos).norm();
+					Vector2 d = (map.players[k].pos - map.players[CURRENT_PLAYER].pos).norm();
+					map.ball.velocity = MAX_BALL_VELOCITY * d;
 					map.ball.acceleration = -MAX_BALL_ACCELERATION * map.ball.velocity.norm();
+					map.players[CURRENT_PLAYER].velocity = V * d;
 					BALL_PLAYER = -1;
 					PREVIOUS_BALL_PLAYER = CURRENT_PLAYER;
+					//CURRENT_PLAYER = k;
 				}
 			}
 			default:
@@ -114,17 +136,19 @@ int main()
 		dt = time.asSeconds() - last_time;
 		map.update(dt);
 
+		window.clear(sf::Color::Black);
 		window.draw(field);
 		drawTeam(map.players, window, pointer, true);
 		drawTeam(map.opponentPlayers, window, pointer, false);
 		drawBall(map.ball, window);
+		
 		
 		window.draw(text);
 		window.display();
 
 		last_time = time.asSeconds();
 		//std::cout << map.ball.pos << "   ";
-		//std::cout << map.players[0].velocity << "\n";
+		std::cout << map.players[3].pos << "\n";
 		//std::cout << map.ball.radius << "\n";
 		//std::cout << CURRENT_PLAYER << " ";
 		//std::cout << BALL_PLAYER << std::endl;
