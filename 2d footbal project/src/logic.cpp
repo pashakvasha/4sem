@@ -9,8 +9,9 @@ extern int CURRENT_PLAYER;
 void Ball::update(float dt)
 {
 	size = (20 * pos.y / (MAP_SIZE.y + 1)) * 0.02f + 0.3f;
-	radius = Vector2(0.1 * size * texture.getSize().x / 2, 0.1 * size * texture.getSize().y / 2);
+	radius = 0.1 * size * Vector2(texture.getSize().x / 2, texture.getSize().y / 2);
 	pos += velocity * dt;
+	angle += 50 * velocity.len() / radius.x * dt;
 	if (velocity * acceleration < 0)
 		velocity += acceleration * dt;
 	else
@@ -20,8 +21,37 @@ void Ball::update(float dt)
 void Player::update(float dt)
 {
 	size = (20 * pos.y / (MAP_SIZE.y + 1)) * 0.02f + 0.3f;
-	radius = Vector2(size * texture.getSize().x / 2, size * texture.getSize().y / 2);
+	radius = size *  Vector2(texture.getSize().x / 2, texture.getSize().y / 2);
+
 	pos += velocity * dt;
+
+	currentFrame += 10 * dt;
+	Vector2 v = velocity.norm();
+	if (currentFrame > 4)
+		currentFrame -= 4;
+	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
+
+	if ( v.x == 1 && v.y == 0)
+	{
+		texture.loadFromFile("player" + std::to_string(teamID) + "_right_" + std::to_string((int)currentFrame / 2) + ".png");
+	}
+
+	if (v.x == -1 && v.y == 0)
+	{
+		texture.loadFromFile("player" + std::to_string(teamID) + "_left_" + std::to_string((int)currentFrame / 2) + ".png");
+	}
+
+	Vector2 d = Vector2(1, -1).norm();
+	if (v.x == d.x && v.y == d.y)
+	{
+		texture.loadFromFile("player" + std::to_string(teamID) + "_up_" + std::to_string((int)currentFrame) + ".png");
+	}
+
+	d = Vector2(-1, 1).norm();
+	if (v.x == d.x && v.y == d.y)
+	{
+		texture.loadFromFile("player" + std::to_string(teamID) + "_down_" + std::to_string((int)currentFrame) + ".png");
+	}
 }
 
 void Map::update(float dt)
@@ -87,13 +117,16 @@ void createTeams(Map& map)
 		Player player;
 		Player opponent;
 
-		player.texture.loadFromFile("player1_left_0.png");
+		player.teamID = 1;
+		player.currentFrame = 0;
+		player.texture.loadFromFile("player1_stop.png");
 		player.texture.setSmooth(true);
-
-		opponent.texture.loadFromFile("player2.png");
-		opponent.texture.setSmooth(true);
-
 		player.pos = Vector2(i * 100 + 50, i * 100 + 50);
+
+		opponent.texture.loadFromFile("player2_stop.png");
+		opponent.texture.setSmooth(true);
+		opponent.teamID = 2;
+		opponent.currentFrame = 0;
 		opponent.pos = Vector2(800 - i * 100 - 50, i * 100 + 50);
 
 		map.opponentPlayers.push_back(opponent);
@@ -105,7 +138,8 @@ void createBall(Ball& ball)
 {
 	ball.texture.loadFromFile("ball.png");
 	ball.texture.setSmooth(true);
-	ball.pos = Vector2(400, 400);
+	ball.pos = Vector2(500, 500);
+	ball.angle = 0;
 	ball.velocity = Vector2(0, 0);
 	ball.acceleration = Vector2(0, 0);
 }

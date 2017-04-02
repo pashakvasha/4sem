@@ -6,7 +6,6 @@
 int PREVIOUS_BALL_PLAYER = -1;
 int BALL_PLAYER = -1;
 int CURRENT_PLAYER = 0;
-float CURRENT_FRAME = 0;
 
 
 int main()
@@ -40,8 +39,8 @@ int main()
 	while (window.isOpen())
 	{	
 
-		sf::Text text("Q - change player\n D - pass to another player ", font);
-		text.setCharacterSize(20);
+		sf::Text text("Q - change player\n D - pass to another player", font);
+		text.setCharacterSize(15);
 		text.setStyle(sf::Text::Bold);
 		text.setStyle(sf::Text::Underlined);
 		text.setColor(sf::Color::White);
@@ -49,6 +48,7 @@ int main()
 		for (int i = 0; i < map.players.size(); i++)
 		{
 			map.players[i].velocity = Vector2(0, 0);
+
 			map.opponentPlayers[i].velocity = Vector2(0, 0);
 		}
 
@@ -92,47 +92,24 @@ int main()
 				break;
 			}
 		}
-		
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
-			CURRENT_FRAME += 10 * dt;
-			if (CURRENT_FRAME > 2)
-				CURRENT_FRAME -= 2;
-			map.players[CURRENT_PLAYER].texture.loadFromFile("player1_left_" + std::to_string((int)CURRENT_FRAME) + ".png");
 			map.players[CURRENT_PLAYER].velocity = Vector2(-V, 0);
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
-			{
-				map.players[CURRENT_PLAYER].velocity += Vector2(-MAX_PLAYER_ACCELERATION, 0);
-			}
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
-			CURRENT_FRAME += 10 * dt;
-			if (CURRENT_FRAME > 2)
-				CURRENT_FRAME -= 2;
-			map.players[CURRENT_PLAYER].texture.loadFromFile("player1_right_" + std::to_string((int)CURRENT_FRAME) + ".png");
 			map.players[CURRENT_PLAYER].velocity = Vector2(V, 0);
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
-			{
-				map.players[CURRENT_PLAYER].velocity += Vector2(MAX_PLAYER_ACCELERATION, 0);
-			}
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 		{
-			CURRENT_FRAME += 10 * dt;
-			if (CURRENT_FRAME > 4)
-				CURRENT_FRAME -= 4;
-			map.players[CURRENT_PLAYER].texture.loadFromFile("player1_up_" + std::to_string((int)CURRENT_FRAME) + ".png");
 			map.players[CURRENT_PLAYER].velocity = V * Vector2(1, -1);
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		{
-			CURRENT_FRAME += 10 * dt;
-			if (CURRENT_FRAME > 4)
-				CURRENT_FRAME -= 4;
-			map.players[CURRENT_PLAYER].texture.loadFromFile("player1_down_" + std::to_string((int)CURRENT_FRAME) + ".png");
 			map.players[CURRENT_PLAYER].velocity = -V * Vector2(1, -1);
 		}
+
+		
 
 		dt = time.asSeconds() - last_time;
 		map.update(dt);
@@ -146,12 +123,11 @@ int main()
 		window.display();
 
 		last_time = time.asSeconds();
-		/*std::cout << map.ball.pos << "   ";
-		std::cout << map.players[0].pos << "   ";
-		std::cout << map.players[0].radius << "   ";
-		std::cout << map.ball.radius << "   ";*/
-		std::cout << CURRENT_PLAYER << " ";
-		std::cout << BALL_PLAYER << std::endl;
+		//std::cout << map.ball.pos << "   ";
+		//std::cout << map.players[0].velocity << "\n";
+		//std::cout << map.ball.radius << "\n";
+		//std::cout << CURRENT_PLAYER << " ";
+		//std::cout << BALL_PLAYER << std::endl;
 		
 	}
 	return 0;
