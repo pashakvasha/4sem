@@ -5,7 +5,7 @@
 const Vector2 MAP_SIZE = Vector2(800, 600);
 const int MAX_BALL_VELOCITY = 500;
 const int MAX_BALL_ACCELERATION = 300;
-const int MAX_PLAYER_ACCELERATION = 500;
+const int MAX_PLAYER_ACCELERATION = 1500;
 const int MAX_PLAYER_VELOCITY = 100;
 const int PLAYERS_AMOUNT = 6;
 const float V = 70;
@@ -28,7 +28,7 @@ struct Player
 	Vector2 pos;
 	Vector2 velocity;
 	Vector2 radius;
-
+	Vector2 acceleration;
 	Vector2 zone_begin;
 	Vector2 zone_end;
 	bool in_zone();

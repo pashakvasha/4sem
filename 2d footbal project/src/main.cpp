@@ -6,6 +6,7 @@
 int PREVIOUS_BALL_PLAYER = -1;
 int BALL_PLAYER = -1;
 int CURRENT_PLAYER = 0;
+bool IS_MOVE;
 
 
 int main()
@@ -39,7 +40,7 @@ int main()
 	while (window.isOpen())
 	{	
 
-		sf::Text text("Q - change player\n D - pass to another player", font);
+		sf::Text text("Q - change player\n D - pass to another player\n Å - acceleration", font);
 		text.setCharacterSize(15);
 		text.setStyle(sf::Text::Bold);
 		text.setStyle(sf::Text::Underlined);
@@ -48,7 +49,7 @@ int main()
 		for (int i = 0; i < map.players.size(); i++)
 		{
 			map.players[i].velocity = Vector2(0, 0);
-
+			map.players[i].acceleration = Vector2(0, 0);
 			map.opponentPlayers[i].velocity = Vector2(0, 0);
 		}
 
@@ -94,6 +95,7 @@ int main()
 					else
 						CURRENT_PLAYER = BALL_PLAYER;
 				}
+
 				if (event.key.code == sf::Keyboard::D && BALL_PLAYER != -1)
 				{
 					int k = rand() % PLAYERS_AMOUNT;
@@ -114,23 +116,33 @@ int main()
 				break;
 			}
 		}
+
+		IS_MOVE = false;
+
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
 			map.players[CURRENT_PLAYER].velocity = Vector2(-V, 0);
+			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
 			map.players[CURRENT_PLAYER].velocity = Vector2(V, 0);
+			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 		{
 			map.players[CURRENT_PLAYER].velocity = V * Vector2(1, -1);
+			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		{
 			map.players[CURRENT_PLAYER].velocity = -V * Vector2(1, -1);
+			IS_MOVE = true;
 		}
-
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && IS_MOVE)
+		{
+			map.players[CURRENT_PLAYER].acceleration = MAX_PLAYER_ACCELERATION * map.players[CURRENT_PLAYER].velocity.norm();
+		}
 		
 
 		dt = time.asSeconds() - last_time;
@@ -148,7 +160,7 @@ int main()
 
 		last_time = time.asSeconds();
 		//std::cout << map.ball.pos << "   ";
-		std::cout << map.players[3].pos << "\n";
+		//std::cout << map.players[3].pos << "\n";
 		//std::cout << map.ball.radius << "\n";
 		//std::cout << CURRENT_PLAYER << " ";
 		//std::cout << BALL_PLAYER << std::endl;

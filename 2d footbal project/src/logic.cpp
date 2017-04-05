@@ -10,13 +10,13 @@ std::string getDirection(const Vector2& v)
 {
 	Vector2 right(1, 0);
 	double cos = (right * v) / (right.len() * v.len());
-	if (cos >= 0.5 && cos <= 1)
-		return "right";
-	if (cos >= -1 && cos <= -0.5)
-		return "left";
-	if (cos > -0.5 && cos < 0.5 && v.y > 0)
-		return "up";
-	return "down";	
+	if (cos > sqrt(2) / 2 && cos <= 1)
+		return "_right_";
+	if (cos >= -1 && cos < -sqrt(2) / 2)
+		return "_left_";
+	if (cos > -sqrt(2) / 2 && cos <= sqrt(2) / 2 && v.x > 0)
+		return "_up_";
+	return "_down_";	
 }
 
 void Ball::update(float dt)
@@ -50,16 +50,18 @@ void Player::update(float dt)
 	size = (20 * pos.y / (MAP_SIZE.y + 1)) * 0.02f + 0.3f;
 	radius = size *  Vector2(texture.getSize().x / 2, texture.getSize().y / 2);
 
+	velocity += acceleration * dt;
 	pos += velocity * dt;
-
-	currentFrame += 10 * dt;
+	
+	currentFrame += velocity.len()/10 * dt;
 	Vector2 v = velocity.norm();
 	if (currentFrame > 4)
 		currentFrame -= 4;
+
 	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
 
 	if (velocity.len() != 0)
-		texture.loadFromFile("player" + std::to_string(teamID) + "_" + getDirection(velocity) + "_" + std::to_string((int)currentFrame) + ".png");
+		texture.loadFromFile("player" + std::to_string(teamID) + getDirection(velocity) + std::to_string((int)currentFrame) + ".png");
 
 }
 
@@ -90,16 +92,16 @@ void Map::update(float dt)
 		{
 			hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
 		}
-		if (hero.in_zone())
+		else
 		{
 			if (ball.in_zone(hero) && !RUN_TO_BALL)
 			{
 				hero.velocity = V * (ball.pos - hero.pos).norm();
 				RUN_TO_BALL = true;
 				if (abs((ball.pos - hero.pos).x) < V / 2 && abs((ball.pos - hero.pos).y) < V / 2)
-					hero.velocity = ball.pos - hero.pos;
+					hero.velocity = Vector2(0, 0);
 			}
-			else if (RUN_TO_BALL)
+			else if (ball.in_zone(hero) && RUN_TO_BALL)
 			{
 				hero.velocity = V * (ball.pos - hero.pos).norm();
 				if (abs((ball.pos - hero.pos).x) < 2 * V && abs((ball.pos - hero.pos).y) <  2 * V)
@@ -109,7 +111,7 @@ void Map::update(float dt)
 			{
 				hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
 				if (abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).x) < V  && abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).y) < V)
-					hero.velocity = (hero.zone_end + hero.zone_begin) / 2 - hero.pos;
+					hero.velocity = hero.velocity = Vector2(0, 0);
 			}
 		}
 		hero.update(dt);
