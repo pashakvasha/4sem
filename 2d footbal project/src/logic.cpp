@@ -6,6 +6,16 @@ extern int BALL_PLAYER;
 extern int PREVIOUS_BALL_PLAYER;
 extern int CURRENT_PLAYER;
 
+/*
+FIXIT:
+Лучше не использовать строки для этой цели:
+enum class Direction
+{
+	Left, Right, Up, Down
+};
+
+Direction getDirection(const Vector2& v)
+*/
 std::string getDirection(const Vector2& v)
 {
 	Vector2 right(1, 0);
