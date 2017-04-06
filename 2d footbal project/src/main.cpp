@@ -14,17 +14,6 @@ int main()
 	sf::Font font;
 	font.loadFromFile("arial.ttf");
 
-	Map map;
-	map.size = Vector2(800, 600);
-	createBall(map.ball);
-	createTeams(map);
-
-	sf::RenderWindow window(sf::VideoMode(map.size.x, map.size.y), "My window");
-	sf::Clock clock;
-
-	float last_time = 0;
-	float dt;
-
 	sf::Texture texturePointer;
 	texturePointer.loadFromFile("pointer.png");
 	texturePointer.setSmooth(true);
@@ -34,43 +23,80 @@ int main()
 	textureField.loadFromFile("field.png");
 	textureField.setSmooth(true);
 	sf::Sprite field(textureField);
-	field.setScale(1.25f, 1.75f);
+	field.setScale(2.0f, 1.76f);
+
+	Map map;
+	map.size = Vector2(2.0f * field.getTexture()->getSize().x, 1.76f * field.getTexture()->getSize().y);
+
+	map.myTeam.createTeam(1);
+	map.opponentTeam.createTeam(2);
+
+	createBall(map.ball);
+
+	sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE.x, WINDOW_SIZE.y), "My window");
+	sf::Clock clock;
+
+	float last_time = 0;
+	float dt;
 
 	sf::Event event;
+
+	sf::View view;
+	view.reset(sf::FloatRect(0, 0, WINDOW_SIZE.x, WINDOW_SIZE.y));
+
 	while (window.isOpen())
 	{	
 
-		sf::Text text("Q - change player\n D - pass to another player\n Å - acceleration", font);
+		sf::Text text("Q - change player\n D - pass to another player\n E - acceleration", font);
 		text.setCharacterSize(15);
 		text.setStyle(sf::Text::Bold);
 		text.setStyle(sf::Text::Underlined);
 		text.setColor(sf::Color::White);
 
-		for (int i = 0; i < map.players.size(); i++)
+		for (int i = 0; i < PLAYERS_AMOUNT; i++)
 		{
-			map.players[i].velocity = Vector2(0, 0);
-			map.players[i].acceleration = Vector2(0, 0);
-			map.opponentPlayers[i].velocity = Vector2(0, 0);
+			map.myTeam.players[i].stopPlayer();
+			map.opponentTeam.players[i].stopPlayer();
 		}
 
 		//defenders
-		map.opponentPlayers[0].zone_begin = Vector2(map.size.x / 2, 0);
-		map.opponentPlayers[0].zone_end = Vector2(map.size.x, map.size.y / 3);
+		map.myTeam.players[0].zone_begin = Vector2(0, 0);
+		map.myTeam.players[0].zone_end = Vector2(map.size.x / 2, map.size.y / 3);
 
-		map.opponentPlayers[1].zone_begin = Vector2(map.size.x / 2, 2 * map.size.y / 3);
-		map.opponentPlayers[1].zone_end = Vector2(map.size.x, map.size.y);
+		map.myTeam.players[1].zone_begin = Vector2(0, 2 * map.size.y / 3);
+		map.myTeam.players[1].zone_end = Vector2(map.size.x / 2, map.size.y);
 
-		map.opponentPlayers[2].zone_begin = Vector2(3 * map.size.x / 5, map.size.y / 4);
-		map.opponentPlayers[2].zone_end = Vector2(map.size.x, 3 * map.size.y / 4);
+		map.myTeam.players[2].zone_begin = Vector2(0, map.size.y / 4);
+		map.myTeam.players[2].zone_end = Vector2(2 * map.size.x / 5, 3 * map.size.y / 4);
 		//mildfielder
-		map.opponentPlayers[3].zone_begin = Vector2(2 * map.size.x / 10, 0);
-		map.opponentPlayers[3].zone_end = Vector2(8 * map.size.x / 10, map.size.y);
+		map.myTeam.players[3].zone_begin = Vector2(map.size.x / 5, 0);
+		map.myTeam.players[3].zone_end = Vector2(4 * map.size.x / 5, map.size.y);
 		//forward
-		map.opponentPlayers[4].zone_begin = Vector2(0, 0);
-		map.opponentPlayers[4].zone_end = Vector2(map.size.x / 2, map.size.y / 2);
+		map.myTeam.players[4].zone_begin = Vector2(map.size.x / 2, 0);
+		map.myTeam.players[4].zone_end = Vector2(map.size.x, map.size.y / 2);
 
-		map.opponentPlayers[5].zone_begin = Vector2(0, map.size.y / 2);
-		map.opponentPlayers[5].zone_end = Vector2(map.size.x / 2, map.size.y);
+		map.myTeam.players[5].zone_begin = Vector2(map.size.x / 2, map.size.y / 2);
+		map.myTeam.players[5].zone_end = Vector2(map.size.x, map.size.y);
+
+
+		//defenders
+		map.opponentTeam.players[0].zone_begin = Vector2(map.size.x / 2, 0);
+		map.opponentTeam.players[0].zone_end = Vector2(map.size.x, map.size.y / 3);
+
+		map.opponentTeam.players[1].zone_begin = Vector2(map.size.x / 2, 2 * map.size.y / 3);
+		map.opponentTeam.players[1].zone_end = Vector2(map.size.x, map.size.y);
+
+		map.opponentTeam.players[2].zone_begin = Vector2(3 * map.size.x / 5, map.size.y / 4);
+		map.opponentTeam.players[2].zone_end = Vector2(map.size.x, 3 * map.size.y / 4);
+		//mildfielder
+		map.opponentTeam.players[3].zone_begin = Vector2(2 * map.size.x / 10, 0);
+		map.opponentTeam.players[3].zone_end = Vector2(8 * map.size.x / 10, map.size.y);
+		//forward
+		map.opponentTeam.players[4].zone_begin = Vector2(0, 0);
+		map.opponentTeam.players[4].zone_end = Vector2(map.size.x / 2, map.size.y / 2);
+
+		map.opponentTeam.players[5].zone_begin = Vector2(0, map.size.y / 2);
+		map.opponentTeam.players[5].zone_end = Vector2(map.size.x / 2, map.size.y);
 
 		sf::Time time = clock.getElapsedTime();
 		sf::Event event;
@@ -103,10 +129,11 @@ int main()
 					{
 						k = rand() % PLAYERS_AMOUNT;
 					}
-					Vector2 d = (map.players[k].pos - map.players[CURRENT_PLAYER].pos).norm();
+					Vector2 d = (map.myTeam.players[k].pos - map.myTeam.players[CURRENT_PLAYER].pos).norm();
 					map.ball.velocity = MAX_BALL_VELOCITY * d;
 					map.ball.acceleration = -MAX_BALL_ACCELERATION * map.ball.velocity.norm();
-					map.players[CURRENT_PLAYER].velocity = V * d;
+					map.myTeam.players[CURRENT_PLAYER].velocity = V * d;
+					//map.myTeam.players[CURRENT_PLAYER].withBall = false;
 					BALL_PLAYER = -1;
 					PREVIOUS_BALL_PLAYER = CURRENT_PLAYER;
 					//CURRENT_PLAYER = k;
@@ -121,37 +148,40 @@ int main()
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
-			map.players[CURRENT_PLAYER].velocity = Vector2(-V, 0);
+			map.myTeam.players[CURRENT_PLAYER].velocity = Vector2(-V, 0);
 			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
-			map.players[CURRENT_PLAYER].velocity = Vector2(V, 0);
+			map.myTeam.players[CURRENT_PLAYER].velocity = Vector2(V, 0);
 			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 		{
-			map.players[CURRENT_PLAYER].velocity = V * Vector2(1, -1);
+			map.myTeam.players[CURRENT_PLAYER].velocity = V * Vector2(1, -1);
 			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		{
-			map.players[CURRENT_PLAYER].velocity = -V * Vector2(1, -1);
+			map.myTeam.players[CURRENT_PLAYER].velocity = -V * Vector2(1, -1);
 			IS_MOVE = true;
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && IS_MOVE)
 		{
-			map.players[CURRENT_PLAYER].acceleration = MAX_PLAYER_ACCELERATION * map.players[CURRENT_PLAYER].velocity.norm();
+			map.myTeam.players[CURRENT_PLAYER].acceleration = MAX_PLAYER_ACCELERATION * map.myTeam.players[CURRENT_PLAYER].velocity.norm();
 		}
 		
+		map.camera.pos = map.ball.pos;
 
 		dt = time.asSeconds() - last_time;
 		map.update(dt);
 
+		view.setCenter(map.camera.pos.x, map.size.y / 2);
+		window.setView(view);
 		window.clear(sf::Color::Black);
 		window.draw(field);
-		drawTeam(map.players, window, pointer, true);
-		drawTeam(map.opponentPlayers, window, pointer, false);
+		drawTeam(map.myTeam.players, window, pointer, true);
+		drawTeam(map.opponentTeam.players, window, pointer, false);
 		drawBall(map.ball, window);
 		
 		
@@ -159,10 +189,10 @@ int main()
 		window.display();
 
 		last_time = time.asSeconds();
-		//std::cout << map.ball.pos << "   ";
-		//std::cout << map.players[3].pos << "\n";
+		//std::cout << map.ball.pos << "\n";
+		std::cout << map.myTeam.players[3].velocity << "\n";
 		//std::cout << map.ball.radius << "\n";
-		//std::cout << CURRENT_PLAYER << " ";
+		//std::cout << map.players[CURRENT_PLAYER].velocity.x << "\n ";
 		//std::cout << BALL_PLAYER << std::endl;
 		
 	}

@@ -6,16 +6,6 @@ extern int BALL_PLAYER;
 extern int PREVIOUS_BALL_PLAYER;
 extern int CURRENT_PLAYER;
 
-/*
-FIXIT:
-Лучше не использовать строки для этой цели:
-enum class Direction
-{
-	Left, Right, Up, Down
-};
-
-Direction getDirection(const Vector2& v)
-*/
 std::string getDirection(const Vector2& v)
 {
 	Vector2 right(1, 0);
@@ -31,7 +21,7 @@ std::string getDirection(const Vector2& v)
 
 void Ball::update(float dt)
 {
-	size = (20 * pos.y / (MAP_SIZE.y + 1)) * 0.02f + 0.3f;
+	size = (20 * pos.y / (WINDOW_SIZE.y + 1)) * 0.02f + 0.3f;
 	radius = 0.1 * size * Vector2(texture.getSize().x / 2, texture.getSize().y / 2);
 	pos += velocity * dt;
 	angle += 50 * velocity.len() / radius.x * dt;
@@ -55,48 +45,10 @@ bool Ball::in_zone(struct Player hero)
 	return false;
 }
 
-void Player::update(float dt)
+void Team::setPositions(Ball& ball)
 {
-	size = (20 * pos.y / (MAP_SIZE.y + 1)) * 0.02f + 0.3f;
-	radius = size *  Vector2(texture.getSize().x / 2, texture.getSize().y / 2);
-
-	velocity += acceleration * dt;
-	pos += velocity * dt;
-	
-	currentFrame += velocity.len()/10 * dt;
-	Vector2 v = velocity.norm();
-	if (currentFrame > 4)
-		currentFrame -= 4;
-
-	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
-
-	if (velocity.len() != 0)
-		texture.loadFromFile("player" + std::to_string(teamID) + getDirection(velocity) + std::to_string((int)currentFrame) + ".png");
-
-}
-
-void Map::update(float dt)
-{
-	for (auto& hero : players)
-	{
-		if (hero.pos.x + hero.radius.x >= size.x && hero.velocity.x > 0)
-			hero.velocity = Vector2(0, 0);
-		if (hero.pos.x - hero.radius.x <= 0 && hero.velocity.x < 0)
-			hero.velocity = Vector2(0, 0);
-		if (hero.pos.y - hero.radius.y <= 0 && hero.velocity.y < 0)
-			hero.velocity = Vector2(0, 0);
-		if (hero.pos.y + hero.radius.y >= size.y && hero.velocity.y > 0)
-			hero.velocity = Vector2(0, 0);
-		hero.update(dt);
-	}
-
-	for (auto& hero : opponentPlayers)
-	{
-		hero.update(dt);
-	}
-
 	bool RUN_TO_BALL = false;
-	for (auto& hero : opponentPlayers)
+	for (auto& hero : players)
 	{
 		if (!hero.in_zone())
 		{
@@ -124,15 +76,102 @@ void Map::update(float dt)
 					hero.velocity = hero.velocity = Vector2(0, 0);
 			}
 		}
+	}
+}
+
+void Player::stopPlayer()
+{
+	acceleration = Vector2(0, 0);
+	velocity = Vector2(0, 0);
+}
+
+void Player::update(float dt)
+{
+	size = (20 * pos.y / (WINDOW_SIZE.y + 1)) * 0.02f + 0.3f;
+	radius = size *  Vector2(texture.getSize().x / 2, texture.getSize().y / 2);
+	velocity += acceleration * dt;
+	if (velocity.len() > MAX_PLAYER_VELOCITY)
+		velocity = MAX_PLAYER_VELOCITY * velocity.norm();
+	pos += velocity * dt;
+	
+	currentFrame += velocity.len()/10 * dt;
+	Vector2 v = velocity.norm();
+	if (currentFrame > 4)
+		currentFrame -= 4;
+
+	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
+
+	if (velocity.len() != 0)
+		texture.loadFromFile("player" + std::to_string(teamID) + getDirection(velocity) + std::to_string((int)currentFrame) + ".png");
+
+}
+
+void Camera::setPosition()
+{
+	if (pos.x <= 400)
+		pos.x = 400;
+	if (pos.x >= 880)
+		pos.x = 880;
+}
+
+void Team::createTeam(const char teamID)
+{
+	for (int i = 0; i < PLAYERS_AMOUNT; i++)
+	{
+		Player player;
+		player.stopPlayer();
+		player.teamID = teamID;
+		player.currentFrame = 0;
+		player.texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
+		player.texture.setSmooth(true);
+		player.pos = Vector2(i * 100 + 50, i * 100 + 50);
+
+		players.push_back(player);
+	}
+}
+
+void Map::update(float dt)
+{
+	for (auto& hero : myTeam.players)
+	{
+		if (hero.pos.x + hero.radius.x >= size.x && hero.velocity.x > 0)
+		{
+			hero.stopPlayer();
+		}
+		if (hero.pos.x - hero.radius.x <= 0 && hero.velocity.x < 0)
+		{
+			hero.stopPlayer();
+		}
+		if (hero.pos.y - hero.radius.y <= 0 && hero.velocity.y < 0)
+		{
+			hero.stopPlayer();
+		}
+		if (hero.pos.y + hero.radius.y >= size.y && hero.velocity.y > 0)
+		{
+			hero.stopPlayer();
+		}
 		hero.update(dt);
 	}
 
-	for (int i = 0; (i < players.size()) && (BALL_PLAYER < 0); i++)
+	opponentTeam.setPositions(ball);
+	//myTeam.setPositions(ball);
+
+	for (auto& hero : opponentTeam.players)
+	{
+		hero.update(dt);
+	}
+
+	for (auto& hero : opponentTeam.players)
+	{
+		hero.update(dt);
+	}
+
+	for (int i = 0; (i < myTeam.players.size()) && (BALL_PLAYER < 0); i++)
 	{
 		if (i != PREVIOUS_BALL_PLAYER)
 		{
-			Vector2 d = ball.pos - players[i].pos - Vector2(0, players[i].radius.y);
-			if (d.len() < ball.radius.x + players[i].radius.x)
+			Vector2 d = ball.pos - myTeam.players[i].pos - Vector2(0, myTeam.players[i].radius.y);
+			if (d.len() < ball.radius.x + myTeam.players[i].radius.x)
 			{
 				BALL_PLAYER = i;
 				CURRENT_PLAYER = BALL_PLAYER;
@@ -147,8 +186,8 @@ void Map::update(float dt)
 
 	if (BALL_PLAYER >= 0)
 	{
-		ball.pos = players[BALL_PLAYER].pos + Vector2(5, players[BALL_PLAYER].radius.y);
-		ball.velocity = players[BALL_PLAYER].velocity;
+		ball.pos = myTeam.players[BALL_PLAYER].pos + Vector2(5, myTeam.players[BALL_PLAYER].radius.y);
+		ball.velocity = myTeam.players[BALL_PLAYER].velocity;
 	}
 
 	if (ball.pos.x + ball.radius.x >= size.x && ball.velocity.x > 0)
@@ -161,30 +200,7 @@ void Map::update(float dt)
 		ball.velocity = Vector2(0, 0);
 
 	ball.update(dt);
-}
-
-void createTeams(Map& map)
-{
-	for (size_t i = 0; i < PLAYERS_AMOUNT; i++)
-	{
-		Player player;
-		Player opponent;
-
-		player.teamID = 1;
-		player.currentFrame = 0;
-		player.texture.loadFromFile("player1_stop.png");
-		player.texture.setSmooth(true);
-		player.pos = Vector2(i * 100 + 50, i * 100 + 50);
-
-		opponent.texture.loadFromFile("player2_stop.png");
-		opponent.texture.setSmooth(true);
-		opponent.teamID = 2;
-		opponent.currentFrame = 0;
-		opponent.pos = Vector2(800 - i * 100 - 50, i * 100 + 50);
-
-		map.opponentPlayers.push_back(opponent);
-		map.players.push_back(player);
-	}
+	camera.setPosition();
 }
 
 void createBall(Ball& ball)
