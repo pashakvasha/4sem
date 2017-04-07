@@ -31,6 +31,12 @@ void Ball::update(float dt)
 		velocity = Vector2(0, 0);
 }
 
+void Ball::moveBall(const Vector2& direction)
+{
+	velocity = MAX_BALL_VELOCITY * direction;
+	acceleration = -MAX_BALL_ACCELERATION * velocity.norm();
+}
+
 bool Player::in_zone()
 {
 	if ((pos.x < zone_end.x && pos.x > zone_begin.x) && (pos.y < zone_end.y && pos.y > zone_begin.y))
@@ -48,32 +54,36 @@ bool Ball::in_zone(struct Player hero)
 void Team::setPositions(Ball& ball)
 {
 	bool RUN_TO_BALL = false;
-	for (auto& hero : players)
+	for (auto& player : players)
 	{
-		if (!hero.in_zone() && !hero.withBall)
+		if (!player.in_zone() && !player.currentPlayer)
 		{
-			hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
+			Vector2 directionToZoneCenter = ((player.zone_end + player.zone_begin) / 2 - player.pos).norm();
+			player.movePlayer(directionToZoneCenter);
 		}
 		else
 		{
-			if (ball.in_zone(hero) && !RUN_TO_BALL && !hero.withBall)
+			if (ball.in_zone(player) && !RUN_TO_BALL && !player.currentPlayer)
 			{
-				hero.velocity = V * (ball.pos - hero.pos).norm();
+				Vector2 directionToBall = (ball.pos - player.pos).norm();
+				player.movePlayer(directionToBall);
 				RUN_TO_BALL = true;
-				if (abs((ball.pos - hero.pos).x) < V / 2 && abs((ball.pos - hero.pos).y) < V / 2)
-					hero.velocity = Vector2(0, 0);
+				if (abs((ball.pos - player.pos).x) < V / 2 && abs((ball.pos - player.pos).y) < V / 2)
+					player.stopPlayer();
 			}
-			else if (ball.in_zone(hero) && RUN_TO_BALL && !hero.withBall)
+			else if (ball.in_zone(player) && RUN_TO_BALL && !player.currentPlayer)
 			{
-				hero.velocity = V * (ball.pos - hero.pos).norm();
-				if (abs((ball.pos - hero.pos).x) < 2 * V && abs((ball.pos - hero.pos).y) <  2 * V)
-					hero.velocity = Vector2(0, 0);
+				Vector2 directionToBall = (ball.pos - player.pos).norm();
+				player.movePlayer(directionToBall);
+				if (abs((ball.pos - player.pos).x) < 2 * V && abs((ball.pos - player.pos).y) < 2 * V)
+					player.stopPlayer();
 			}
-			else if (!hero.withBall)
+			else if (!player.currentPlayer)
 			{
-				hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
-				if (abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).x) < V  && abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).y) < V)
-					hero.velocity = hero.velocity = Vector2(0, 0);
+				Vector2 directionToZoneCenter = ((player.zone_end + player.zone_begin) / 2 - player.pos).norm();
+				player.movePlayer(directionToZoneCenter);
+				if (abs(((player.zone_end + player.zone_begin) / 2 - player.pos).x) < V  && abs(((player.zone_end + player.zone_begin) / 2 - player.pos).y) < V)
+					player.stopPlayer();
 			}
 		}
 	}
@@ -83,6 +93,16 @@ void Player::stopPlayer()
 {
 	acceleration = Vector2(0, 0);
 	velocity = Vector2(0, 0);
+}
+
+void Player::movePlayer(const Vector2 & direction)
+{
+	velocity = V * direction;
+}
+
+void Player::acceleratePlayer()
+{
+	acceleration = MAX_PLAYER_ACCELERATION * velocity.norm();
 }
 
 void Player::update(float dt)
@@ -114,12 +134,13 @@ void Camera::setPosition()
 		pos.x = 880;
 }
 
-void Team::createTeam(const char teamID, Vector2 fieldSize)
+void Team::createTeam(const char teamID, const Vector2& fieldSize)
 {
 	for (int i = 0; i < PLAYERS_AMOUNT; i++)
 	{
 		Player player;
 		player.withBall = false;
+		player.currentPlayer = false;
 		player.stopPlayer();
 		player.teamID = teamID;
 		player.currentFrame = 0;
@@ -153,6 +174,8 @@ void Team::createTeam(const char teamID, Vector2 fieldSize)
 
 void Map::update(float dt)
 {
+	opponentTeam.setPositions(ball);
+	myTeam.setPositions(ball);
 	for (auto& hero : myTeam.players)
 	{
 		if (hero.pos.x + hero.radius.x >= size.x && hero.velocity.x > 0)
@@ -174,15 +197,7 @@ void Map::update(float dt)
 		hero.update(dt);
 	}
 
-	opponentTeam.setPositions(ball);
-	myTeam.setPositions(ball);
-
 	for (auto& hero : opponentTeam.players)
-	{
-		hero.update(dt);
-	}
-
-	for (auto& hero : myTeam.players)
 	{
 		hero.update(dt);
 	}

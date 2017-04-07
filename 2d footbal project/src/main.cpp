@@ -6,8 +6,6 @@
 int PREVIOUS_BALL_PLAYER = -1;
 int BALL_PLAYER = -1;
 int CURRENT_PLAYER = 0;
-bool IS_MOVE;
-
 
 int main()
 {
@@ -53,11 +51,15 @@ int main()
 		text.setStyle(sf::Text::Underlined);
 		text.setColor(sf::Color::White);
 
+		
 		for (int i = 0; i < PLAYERS_AMOUNT; i++)
 		{
+			map.myTeam.players[i].currentPlayer = false;
 			map.myTeam.players[i].stopPlayer();
 			map.opponentTeam.players[i].stopPlayer();
 		}
+
+		map.myTeam.players[CURRENT_PLAYER].currentPlayer = true;
 
 		sf::Time time = clock.getElapsedTime();
 		sf::Event event;
@@ -90,10 +92,10 @@ int main()
 					{
 						k = rand() % PLAYERS_AMOUNT;
 					}
-					Vector2 d = (map.myTeam.players[k].pos - map.myTeam.players[CURRENT_PLAYER].pos).norm();
-					map.ball.velocity = MAX_BALL_VELOCITY * d;
-					map.ball.acceleration = -MAX_BALL_ACCELERATION * map.ball.velocity.norm();
-					map.myTeam.players[CURRENT_PLAYER].velocity = V * d;
+					Vector2 directionToPass = (map.myTeam.players[k].pos - map.myTeam.players[CURRENT_PLAYER].pos).norm();
+					map.ball.moveBall(directionToPass);
+
+					map.myTeam.players[CURRENT_PLAYER].movePlayer(directionToPass);
 					map.myTeam.players[CURRENT_PLAYER].withBall = false;
 					BALL_PLAYER = -1;
 					PREVIOUS_BALL_PLAYER = CURRENT_PLAYER;
@@ -105,31 +107,26 @@ int main()
 			}
 		}
 
-		IS_MOVE = false;
-
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
-			map.myTeam.players[CURRENT_PLAYER].velocity = Vector2(-V, 0);
-			IS_MOVE = true;
+			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(-1, 0));
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
-			map.myTeam.players[CURRENT_PLAYER].velocity = Vector2(V, 0);
-			IS_MOVE = true;
+			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(1, 0));
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 		{
-			map.myTeam.players[CURRENT_PLAYER].velocity = V * Vector2(1, -1);
-			IS_MOVE = true;
+			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(1, -1));
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		{
-			map.myTeam.players[CURRENT_PLAYER].velocity = -V * Vector2(1, -1);
-			IS_MOVE = true;
+			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(-1, 1));
 		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && IS_MOVE)
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && map.myTeam.players[CURRENT_PLAYER].velocity.len() != 0)
 		{
-			map.myTeam.players[CURRENT_PLAYER].acceleration = MAX_PLAYER_ACCELERATION * map.myTeam.players[CURRENT_PLAYER].velocity.norm();
+			map.myTeam.players[CURRENT_PLAYER].acceleratePlayer();
 		}
 		
 		map.camera.pos = map.ball.pos;
