@@ -133,7 +133,7 @@ int main()
 					map.ball.velocity = MAX_BALL_VELOCITY * d;
 					map.ball.acceleration = -MAX_BALL_ACCELERATION * map.ball.velocity.norm();
 					map.myTeam.players[CURRENT_PLAYER].velocity = V * d;
-					//map.myTeam.players[CURRENT_PLAYER].withBall = false;
+					map.myTeam.players[CURRENT_PLAYER].withBall = false;
 					BALL_PLAYER = -1;
 					PREVIOUS_BALL_PLAYER = CURRENT_PLAYER;
 					//CURRENT_PLAYER = k;
@@ -190,7 +190,7 @@ int main()
 
 		last_time = time.asSeconds();
 		//std::cout << map.ball.pos << "\n";
-		std::cout << map.myTeam.players[3].velocity << "\n";
+		//std::cout << map.myTeam.players[3].velocity << "\n";
 		//std::cout << map.ball.radius << "\n";
 		//std::cout << map.players[CURRENT_PLAYER].velocity.x << "\n ";
 		//std::cout << BALL_PLAYER << std::endl;

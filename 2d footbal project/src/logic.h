@@ -31,7 +31,7 @@ struct Player
 	Vector2 acceleration;
 	Vector2 zone_begin;
 	Vector2 zone_end;
-	//bool withBall;
+	bool withBall;
 	bool in_zone();
 	void stopPlayer();
 	char teamID;
@@ -46,7 +46,6 @@ struct Team
 	std::vector<Player> players;
 	bool runToBall;
 	void setPositions(Ball& ball);
-	//void teamUpdate(float dt);
 	void createTeam(const char teamID);
 };
 

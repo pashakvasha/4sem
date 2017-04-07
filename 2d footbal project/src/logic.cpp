@@ -50,26 +50,26 @@ void Team::setPositions(Ball& ball)
 	bool RUN_TO_BALL = false;
 	for (auto& hero : players)
 	{
-		if (!hero.in_zone())
+		if (!hero.in_zone() && !hero.withBall)
 		{
 			hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
 		}
 		else
 		{
-			if (ball.in_zone(hero) && !RUN_TO_BALL)
+			if (ball.in_zone(hero) && !RUN_TO_BALL && !hero.withBall)
 			{
 				hero.velocity = V * (ball.pos - hero.pos).norm();
 				RUN_TO_BALL = true;
 				if (abs((ball.pos - hero.pos).x) < V / 2 && abs((ball.pos - hero.pos).y) < V / 2)
 					hero.velocity = Vector2(0, 0);
 			}
-			else if (ball.in_zone(hero) && RUN_TO_BALL)
+			else if (ball.in_zone(hero) && RUN_TO_BALL && !hero.withBall)
 			{
 				hero.velocity = V * (ball.pos - hero.pos).norm();
 				if (abs((ball.pos - hero.pos).x) < 2 * V && abs((ball.pos - hero.pos).y) <  2 * V)
 					hero.velocity = Vector2(0, 0);
 			}
-			else
+			else if (!hero.withBall)
 			{
 				hero.velocity = V * ((hero.zone_end + hero.zone_begin) / 2 - hero.pos).norm();
 				if (abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).x) < V  && abs(((hero.zone_end + hero.zone_begin) / 2 - hero.pos).y) < V)
@@ -119,6 +119,7 @@ void Team::createTeam(const char teamID)
 	for (int i = 0; i < PLAYERS_AMOUNT; i++)
 	{
 		Player player;
+		player.withBall = false;
 		player.stopPlayer();
 		player.teamID = teamID;
 		player.currentFrame = 0;
@@ -154,14 +155,14 @@ void Map::update(float dt)
 	}
 
 	opponentTeam.setPositions(ball);
-	//myTeam.setPositions(ball);
+	myTeam.setPositions(ball);
 
 	for (auto& hero : opponentTeam.players)
 	{
 		hero.update(dt);
 	}
 
-	for (auto& hero : opponentTeam.players)
+	for (auto& hero : myTeam.players)
 	{
 		hero.update(dt);
 	}
@@ -174,12 +175,14 @@ void Map::update(float dt)
 			if (d.len() < ball.radius.x + myTeam.players[i].radius.x)
 			{
 				BALL_PLAYER = i;
+				myTeam.players[i].withBall = true;
 				CURRENT_PLAYER = BALL_PLAYER;
 				PREVIOUS_BALL_PLAYER = -1;
 			}
 			else
 			{
 				BALL_PLAYER = -1;
+				myTeam.players[i].withBall = false;
 			}
 		}
 	}
