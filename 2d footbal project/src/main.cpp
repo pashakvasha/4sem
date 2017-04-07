@@ -28,8 +28,8 @@ int main()
 	Map map;
 	map.size = Vector2(2.0f * field.getTexture()->getSize().x, 1.76f * field.getTexture()->getSize().y);
 
-	map.myTeam.createTeam(1);
-	map.opponentTeam.createTeam(2);
+	map.myTeam.createTeam(1, map.size);
+	map.opponentTeam.createTeam(2, map.size);
 
 	createBall(map.ball);
 
@@ -58,45 +58,6 @@ int main()
 			map.myTeam.players[i].stopPlayer();
 			map.opponentTeam.players[i].stopPlayer();
 		}
-
-		//defenders
-		map.myTeam.players[0].zone_begin = Vector2(0, 0);
-		map.myTeam.players[0].zone_end = Vector2(map.size.x / 2, map.size.y / 3);
-
-		map.myTeam.players[1].zone_begin = Vector2(0, 2 * map.size.y / 3);
-		map.myTeam.players[1].zone_end = Vector2(map.size.x / 2, map.size.y);
-
-		map.myTeam.players[2].zone_begin = Vector2(0, map.size.y / 4);
-		map.myTeam.players[2].zone_end = Vector2(2 * map.size.x / 5, 3 * map.size.y / 4);
-		//mildfielder
-		map.myTeam.players[3].zone_begin = Vector2(map.size.x / 5, 0);
-		map.myTeam.players[3].zone_end = Vector2(4 * map.size.x / 5, map.size.y);
-		//forward
-		map.myTeam.players[4].zone_begin = Vector2(map.size.x / 2, 0);
-		map.myTeam.players[4].zone_end = Vector2(map.size.x, map.size.y / 2);
-
-		map.myTeam.players[5].zone_begin = Vector2(map.size.x / 2, map.size.y / 2);
-		map.myTeam.players[5].zone_end = Vector2(map.size.x, map.size.y);
-
-
-		//defenders
-		map.opponentTeam.players[0].zone_begin = Vector2(map.size.x / 2, 0);
-		map.opponentTeam.players[0].zone_end = Vector2(map.size.x, map.size.y / 3);
-
-		map.opponentTeam.players[1].zone_begin = Vector2(map.size.x / 2, 2 * map.size.y / 3);
-		map.opponentTeam.players[1].zone_end = Vector2(map.size.x, map.size.y);
-
-		map.opponentTeam.players[2].zone_begin = Vector2(3 * map.size.x / 5, map.size.y / 4);
-		map.opponentTeam.players[2].zone_end = Vector2(map.size.x, 3 * map.size.y / 4);
-		//mildfielder
-		map.opponentTeam.players[3].zone_begin = Vector2(2 * map.size.x / 10, 0);
-		map.opponentTeam.players[3].zone_end = Vector2(8 * map.size.x / 10, map.size.y);
-		//forward
-		map.opponentTeam.players[4].zone_begin = Vector2(0, 0);
-		map.opponentTeam.players[4].zone_end = Vector2(map.size.x / 2, map.size.y / 2);
-
-		map.opponentTeam.players[5].zone_begin = Vector2(0, map.size.y / 2);
-		map.opponentTeam.players[5].zone_end = Vector2(map.size.x / 2, map.size.y);
 
 		sf::Time time = clock.getElapsedTime();
 		sf::Event event;

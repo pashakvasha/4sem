@@ -97,7 +97,7 @@ void Player::update(float dt)
 	currentFrame += velocity.len()/10 * dt;
 	Vector2 v = velocity.norm();
 	if (currentFrame > 4)
-		currentFrame -= 4;
+		currentFrame = 0;
 
 	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
 
@@ -114,7 +114,7 @@ void Camera::setPosition()
 		pos.x = 880;
 }
 
-void Team::createTeam(const char teamID)
+void Team::createTeam(const char teamID, Vector2 fieldSize)
 {
 	for (int i = 0; i < PLAYERS_AMOUNT; i++)
 	{
@@ -129,6 +129,26 @@ void Team::createTeam(const char teamID)
 
 		players.push_back(player);
 	}
+
+	//defenders
+	players[0].zone_begin = Vector2((teamID - 1) * fieldSize.x / 2, 0);
+	players[0].zone_end = Vector2(fieldSize.x / 2 + (teamID - 1) * fieldSize.x / 2, fieldSize.y / 3);
+
+	players[1].zone_begin = Vector2((teamID - 1) * fieldSize.x / 2, 2 * fieldSize.y / 3);
+	players[1].zone_end = Vector2(fieldSize.x / 2 + (teamID - 1) * fieldSize.x / 2, fieldSize.y);
+
+	players[2].zone_begin = Vector2((teamID - 1) * 3 * fieldSize.x / 5, fieldSize.y / 4);
+	players[2].zone_end = Vector2(2 * fieldSize.x / 5 + (teamID - 1) * 3 * fieldSize.x / 5, 3 * fieldSize.y / 4);
+	//mildfielder
+	players[3].zone_begin = Vector2(fieldSize.x / 5, 0);
+	players[3].zone_end = Vector2(4 * fieldSize.x / 5, fieldSize.y);
+	//forward
+	players[4].zone_begin = Vector2(fieldSize.x / 2 - (teamID - 1) * fieldSize.x / 2, 0);
+	players[4].zone_end = Vector2(fieldSize.x - (teamID - 1) * fieldSize.x / 2, fieldSize.y / 2);
+
+	players[5].zone_begin = Vector2(fieldSize.x / 2 - (teamID - 1) * fieldSize.x / 2, fieldSize.y / 2);
+	players[5].zone_end = Vector2(fieldSize.x - (teamID - 1) * fieldSize.x / 2, fieldSize.y);
+
 }
 
 void Map::update(float dt)

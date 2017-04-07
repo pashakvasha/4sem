@@ -46,7 +46,7 @@ struct Team
 	std::vector<Player> players;
 	bool runToBall;
 	void setPositions(Ball& ball);
-	void createTeam(const char teamID);
+	void createTeam(const char teamID, Vector2 fieldSize);
 };
 
 struct Camera
