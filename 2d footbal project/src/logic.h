@@ -20,6 +20,8 @@ struct Ball
 	float size;
 	float angle;
 	sf::Texture texture;
+
+	void createBall();
 	void moveBall(const Vector2 & direction); // direction must be a unit vector
 	void update(float dt);
 };
@@ -39,6 +41,8 @@ struct Player
 	float size;
 	char teamID;
 	sf::Texture texture;
+
+	void setStartPosition();
 	void movePlayer(const Vector2 & direction); // direction must be a unit vector
 	void acceleratePlayer();
 	void stopPlayer();
@@ -49,13 +53,16 @@ struct Team
 {
 	std::vector<Player> players;
 	bool runToBall;
+
 	void setPositions(Ball& ball);
-	void createTeam(const char teamID, const Vector2& fieldSize);
+	void createTeam(const char& teamID, const Vector2& fieldSize);
 };
 
 struct Camera
 {
+	sf::View view;
 	Vector2 pos;
+
 	void setPosition();
 };
 
@@ -66,9 +73,8 @@ struct Map
 	Team myTeam;
 	Team opponentTeam;
 	Vector2 size;
+
+	void createGame();
 	void update(float dt);
 
 };
-
-
-void createBall(Ball& ball);

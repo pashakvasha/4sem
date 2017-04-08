@@ -3,6 +3,7 @@
 #include "logic.h"
 #include "draw.h"
 
+//IT IS ESSENTIAL to try delete global variables
 int PREVIOUS_BALL_PLAYER = -1;
 int BALL_PLAYER = -1;
 int CURRENT_PLAYER = 0;
@@ -23,14 +24,6 @@ int main()
 	sf::Sprite field(textureField);
 	field.setScale(2.0f, 1.76f);
 
-	Map map;
-	map.size = Vector2(2.0f * field.getTexture()->getSize().x, 1.76f * field.getTexture()->getSize().y);
-
-	map.myTeam.createTeam(1, map.size);
-	map.opponentTeam.createTeam(2, map.size);
-
-	createBall(map.ball);
-
 	sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE.x, WINDOW_SIZE.y), "My window");
 	sf::Clock clock;
 
@@ -39,8 +32,11 @@ int main()
 
 	sf::Event event;
 
-	sf::View view;
-	view.reset(sf::FloatRect(0, 0, WINDOW_SIZE.x, WINDOW_SIZE.y));
+
+
+	Map map;
+	map.size = Vector2(2.0f * field.getTexture()->getSize().x, 1.76f * field.getTexture()->getSize().y);
+	map.createGame();
 
 	while (window.isOpen())
 	{	
@@ -58,7 +54,6 @@ int main()
 			map.myTeam.players[i].stopPlayer();
 			map.opponentTeam.players[i].stopPlayer();
 		}
-
 		map.myTeam.players[CURRENT_PLAYER].currentPlayer = true;
 
 		sf::Time time = clock.getElapsedTime();
@@ -75,6 +70,7 @@ int main()
 			{
 				if (event.key.code == sf::Keyboard::Q)
 				{
+					// IT IS ESSENTIAL to write the function changeCurrentPlayer
 					if (BALL_PLAYER < 0)
 					{
 						CURRENT_PLAYER++;
@@ -87,6 +83,7 @@ int main()
 
 				if (event.key.code == sf::Keyboard::D && BALL_PLAYER != -1)
 				{
+					// IT IS ESSENTIAL to write the function passToPlayer
 					int k = rand() % PLAYERS_AMOUNT;
 					while ( k == CURRENT_PLAYER)
 					{
@@ -128,30 +125,21 @@ int main()
 		{
 			map.myTeam.players[CURRENT_PLAYER].acceleratePlayer();
 		}
-		
-		map.camera.pos = map.ball.pos;
 
 		dt = time.asSeconds() - last_time;
 		map.update(dt);
 
-		view.setCenter(map.camera.pos.x, map.size.y / 2);
-		window.setView(view);
+		//IT IS ESSENTIAL to create structure Draw
+		window.setView(map.camera.view);
 		window.clear(sf::Color::Black);
 		window.draw(field);
 		drawTeam(map.myTeam.players, window, pointer, true);
 		drawTeam(map.opponentTeam.players, window, pointer, false);
 		drawBall(map.ball, window);
-		
-		
 		window.draw(text);
 		window.display();
 
 		last_time = time.asSeconds();
-		//std::cout << map.ball.pos << "\n";
-		//std::cout << map.myTeam.players[3].velocity << "\n";
-		//std::cout << map.ball.radius << "\n";
-		//std::cout << map.players[CURRENT_PLAYER].velocity.x << "\n ";
-		//std::cout << BALL_PLAYER << std::endl;
 		
 	}
 	return 0;
