@@ -2,21 +2,22 @@
 #include "Vector2.h"
 #include "logic.h"
 
-extern int BALL_PLAYER;
 extern int PREVIOUS_BALL_PLAYER;
-extern int CURRENT_PLAYER;
 
-std::string getDirection(const Vector2& v)
+//IT IS ESSENTIAL to rewrite it, using enum, but I don't know syntax
+char getDirection(const Vector2& v)
 {
 	Vector2 right(1, 0);
+	if (v.len() == 0)
+		return 0;
 	double cos = (right * v) / (right.len() * v.len());
 	if (cos > sqrt(2) / 2 && cos <= 1)
-		return "_right_";
+		return 1; // right;
 	if (cos >= -1 && cos < -sqrt(2) / 2)
-		return "_left_";
+		return 2; // left
 	if (cos > -sqrt(2) / 2 && cos <= sqrt(2) / 2 && v.x > 0)
-		return "_up_";
-	return "_down_";	
+		return 3; // up
+	return 4; //down	
 }
 
 void Ball::createBall()
@@ -38,6 +39,18 @@ void Ball::update(float dt)
 	if (velocity * acceleration < 0)
 		velocity += acceleration * dt;
 	else
+		velocity = Vector2(0, 0);
+}
+
+void Ball::checkFieldBoundary(const Vector2& boundary)
+{
+	if (pos.x + radius.x >= boundary.x && velocity.x > 0)
+		velocity = Vector2(0, 0);
+	if (pos.x - radius.x <= 0 && velocity.x < 0)
+		velocity = Vector2(0, 0);
+	if (pos.y - radius.y <= 0 && velocity.y < 0)
+		velocity = Vector2(0, 0);
+	if (pos.y + radius.y >= boundary.y && velocity.y > 0)
 		velocity = Vector2(0, 0);
 }
 
@@ -87,15 +100,8 @@ void Player::update(float dt)
 	pos += velocity * dt;
 
 	currentFrame += velocity.len() / 10 * dt;
-	Vector2 v = velocity.norm();
 	if (currentFrame > 4)
 		currentFrame = 0;
-
-	texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
-
-	if (velocity.len() != 0)
-		texture.loadFromFile("player" + std::to_string(teamID) + getDirection(velocity) + std::to_string((int)currentFrame) + ".png");
-
 }
 
 void Player::setStartPosition()
@@ -103,8 +109,24 @@ void Player::setStartPosition()
 	pos = (zone_end + zone_begin) / 2;
 }
 
-void Team::createTeam(const char& teamID, const Vector2& fieldSize)
+void Player::setTexture(const PlayerTextures& textures)
 {
+	texture = textures.stop;
+	char direction = getDirection(velocity);
+	if (direction == 1)
+		texture = textures.right[(int)currentFrame];
+	if (direction == 2)
+		texture = textures.left[(int)currentFrame];
+	if (direction == 3)
+		texture = textures.up[(int)currentFrame];
+	if (direction == 4)
+		texture = textures.down[(int)currentFrame];
+}
+
+void Team::createTeam(const char& ID, const Vector2& fieldSize)
+{
+	teamID = ID;
+	downloadTextures();
 
 	for (int i = 0; i < PLAYERS_AMOUNT; i++)
 	{
@@ -112,7 +134,6 @@ void Team::createTeam(const char& teamID, const Vector2& fieldSize)
 		player.withBall = false;
 		player.currentPlayer = false;
 		player.stopPlayer();
-		player.teamID = teamID;
 		player.currentFrame = 0;
 		player.texture.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
 		player.texture.setSmooth(true);
@@ -144,7 +165,7 @@ void Team::createTeam(const char& teamID, const Vector2& fieldSize)
 	}
 }
 
-void Team::setPositions(Ball& ball)
+void Team::update(Ball& ball, float dt)
 {
 	bool RUN_TO_BALL = false;
 	for (auto& player : players)
@@ -179,11 +200,36 @@ void Team::setPositions(Ball& ball)
 					player.stopPlayer();
 			}
 		}
+		player.update(dt);
+		player.setTexture(textures);
 	}
 }
 
-void Camera::setPosition()
+void Team::downloadTextures()
 {
+	textures.stop.loadFromFile("player" + std::to_string(teamID) + "_stop.png");
+	for (int i = 0; i < 4; i++) // 4 is the number  of frames
+	{
+		sf::Texture left;
+		sf::Texture right;
+		sf::Texture up;
+		sf::Texture down;
+
+		left.loadFromFile("player" + std::to_string(teamID) + "_left_" + std::to_string(i) + ".png");
+		right.loadFromFile("player" + std::to_string(teamID) + "_right_" + std::to_string(i) + ".png");
+		up.loadFromFile("player" + std::to_string(teamID) + "_up_" + std::to_string(i) + ".png");
+		down.loadFromFile("player" + std::to_string(teamID) + "_down_" + std::to_string(i) + ".png");
+
+		textures.left.push_back(left);
+		textures.right.push_back(right);
+		textures.up.push_back(up);
+		textures.down.push_back(down);
+	}
+}
+
+void Camera::setPosition(const Vector2& position)
+{
+	pos = position;
 	if (pos.x <= 400)
 		pos.x = 400;
 	if (pos.x >= 880)
@@ -191,19 +237,47 @@ void Camera::setPosition()
 	view.setCenter(pos.x, WINDOW_SIZE.y / 2);
 }
 
+void Map::passToPlayer()
+{
+	int k = rand() % PLAYERS_AMOUNT;
+	while (k == myTeam.currentPlayer)
+	{
+		k = rand() % PLAYERS_AMOUNT;
+	}
+
+	Vector2 directionToPass = (myTeam.players[k].pos - myTeam.players[myTeam.currentPlayer].pos).norm();
+	ball.moveBall(directionToPass);
+
+	myTeam.players[myTeam.currentPlayer].movePlayer(directionToPass);
+	myTeam.players[myTeam.currentPlayer].withBall = false;
+	withBall = false;
+	PREVIOUS_BALL_PLAYER = myTeam.currentPlayer;
+}
+
+void Map::changeCurrentPlayer()
+{
+	if (!withBall)
+	{
+		myTeam.currentPlayer++;
+		if (myTeam.currentPlayer >= PLAYERS_AMOUNT)
+			myTeam.currentPlayer = 0;
+	}
+	else
+		myTeam.currentPlayer = myTeam.currentPlayer;
+}
+
 void Map::createGame()
 {
 	camera.view.reset(sf::FloatRect(0, 0, WINDOW_SIZE.x, WINDOW_SIZE.y));
-	myTeam.createTeam(1, size);
+	myTeam.createTeam(1, size); // The first argument is teamID
 	opponentTeam.createTeam(2, size);
+	withBall = false;
+	myTeam.currentPlayer = 0;
 	ball.createBall();
 }
 
 void Map::update(float dt)
 {
-	opponentTeam.setPositions(ball);
-	myTeam.setPositions(ball);
-
 	//IT IS ESSENTIAL to add this cicle to setPositions;
 	for (auto& hero : myTeam.players)
 	{
@@ -223,52 +297,40 @@ void Map::update(float dt)
 		{
 			hero.stopPlayer();
 		}
-		hero.update(dt);
 	}
 
-	for (auto& hero : opponentTeam.players)
-	{
-		hero.update(dt);
-	}
+	opponentTeam.update(ball, dt);
+	myTeam.update(ball, dt);
 
-	for (int i = 0; (i < myTeam.players.size()) && (BALL_PLAYER < 0); i++)
+	for (int i = 0; (i < myTeam.players.size()) && (!withBall); i++)
 	{
 		if (i != PREVIOUS_BALL_PLAYER)
 		{
 			Vector2 d = ball.pos - myTeam.players[i].pos - Vector2(0, myTeam.players[i].radius.y);
 			if (d.len() < ball.radius.x + myTeam.players[i].radius.x)
 			{
-				BALL_PLAYER = i;
+				withBall = true;
 				myTeam.players[i].withBall = true;
-				CURRENT_PLAYER = BALL_PLAYER;
+				myTeam.currentPlayer = i;
 				PREVIOUS_BALL_PLAYER = -1;
 			}
 			else
 			{
-				BALL_PLAYER = -1;
+				withBall = false;
 				myTeam.players[i].withBall = false;
 			}
 		}
 	}
-
-	if (BALL_PLAYER >= 0)
+	if ( withBall )
 	{
-		ball.pos = myTeam.players[BALL_PLAYER].pos + Vector2(5, myTeam.players[BALL_PLAYER].radius.y);
-		ball.velocity = myTeam.players[BALL_PLAYER].velocity;
+		ball.pos = myTeam.players[myTeam.currentPlayer].pos + Vector2(5, myTeam.players[myTeam.currentPlayer].radius.y);
+		ball.velocity = myTeam.players[myTeam.currentPlayer].velocity;
 	}
 
-	if (ball.pos.x + ball.radius.x >= size.x && ball.velocity.x > 0)
-		ball.velocity = Vector2(0, 0);
-	if (ball.pos.x - ball.radius.x <= 0 && ball.velocity.x < 0)
-		ball.velocity = Vector2(0, 0);
-	if (ball.pos.y - ball.radius.y <= 0 && ball.velocity.y < 0)
-		ball.velocity = Vector2(0, 0);
-	if (ball.pos.y + ball.radius.y >= size.y && ball.velocity.y > 0)
-		ball.velocity = Vector2(0, 0);
-
+	
+	ball.checkFieldBoundary(size);
 	ball.update(dt);
 
-	camera.pos = ball.pos;
-	camera.setPosition();
+	camera.setPosition(ball.pos);
 
 }

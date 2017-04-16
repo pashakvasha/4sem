@@ -2,21 +2,19 @@
 #include "Vector2.h"
 #include "logic.h"
 
-extern int CURRENT_PLAYER;
-
-void drawTeam(const std::vector<Player>& team, sf::RenderWindow& window, sf::Sprite & pointer, bool isOurTeam)
+void drawTeam(const Team& team, sf::RenderWindow& window, sf::Sprite & pointer, bool isOurTeam)
 {
-	for (int i = 0; i < team.size(); i++)
+	for (int i = 0; i < team.players.size(); i++)
 	{
-		sf::Sprite man(team[i].texture);
-		man.setPosition(team[i].pos.x, team[i].pos.y);
-		man.setScale(team[i].size, team[i].size);
-		man.setOrigin(team[i].texture.getSize().x / 2, team[i].texture.getSize().x / 2);
+		sf::Sprite man(team.players[i].texture);
+		man.setPosition(team.players[i].pos.x, team.players[i].pos.y);
+		man.setScale(team.players[i].size, team.players[i].size);
+		man.setOrigin(team.players[i].texture.getSize().x / 2, team.players[i].texture.getSize().x / 2);
 
-		if (i == CURRENT_PLAYER && isOurTeam)
+		if (i == team.currentPlayer && isOurTeam)
 		{
-			pointer.setPosition(team[i].pos.x, team[i].pos.y - team[i].radius.y - 0.3 * team[i].size * pointer.getTexture()->getSize().y);
-			pointer.setScale(0.3 * team[i].size, 0.3 * team[i].size);
+			pointer.setPosition(team.players[i].pos.x, team.players[i].pos.y - team.players[i].radius.y - 0.3 * team.players[i].size * pointer.getTexture()->getSize().y);
+			pointer.setScale(0.3 * team.players[i].size, 0.3 * team.players[i].size);
 			window.draw(pointer);
 		}
 

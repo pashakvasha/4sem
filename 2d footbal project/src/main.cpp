@@ -5,8 +5,6 @@
 
 //IT IS ESSENTIAL to try delete global variables
 int PREVIOUS_BALL_PLAYER = -1;
-int BALL_PLAYER = -1;
-int CURRENT_PLAYER = 0;
 
 int main()
 {
@@ -32,8 +30,6 @@ int main()
 
 	sf::Event event;
 
-
-
 	Map map;
 	map.size = Vector2(2.0f * field.getTexture()->getSize().x, 1.76f * field.getTexture()->getSize().y);
 	map.createGame();
@@ -54,7 +50,7 @@ int main()
 			map.myTeam.players[i].stopPlayer();
 			map.opponentTeam.players[i].stopPlayer();
 		}
-		map.myTeam.players[CURRENT_PLAYER].currentPlayer = true;
+		map.myTeam.players[map.myTeam.currentPlayer].currentPlayer = true;
 
 		sf::Time time = clock.getElapsedTime();
 		sf::Event event;
@@ -68,36 +64,17 @@ int main()
 				break;
 			case sf::Event::KeyPressed:
 			{
+				
 				if (event.key.code == sf::Keyboard::Q)
 				{
-					// IT IS ESSENTIAL to write the function changeCurrentPlayer
-					if (BALL_PLAYER < 0)
-					{
-						CURRENT_PLAYER++;
-						if (CURRENT_PLAYER >= PLAYERS_AMOUNT)
-							CURRENT_PLAYER = 0;
-					}
-					else
-						CURRENT_PLAYER = BALL_PLAYER;
+					map.changeCurrentPlayer();
 				}
 
-				if (event.key.code == sf::Keyboard::D && BALL_PLAYER != -1)
+				if (event.key.code == sf::Keyboard::D && map.withBall)
 				{
-					// IT IS ESSENTIAL to write the function passToPlayer
-					int k = rand() % PLAYERS_AMOUNT;
-					while ( k == CURRENT_PLAYER)
-					{
-						k = rand() % PLAYERS_AMOUNT;
-					}
-					Vector2 directionToPass = (map.myTeam.players[k].pos - map.myTeam.players[CURRENT_PLAYER].pos).norm();
-					map.ball.moveBall(directionToPass);
-
-					map.myTeam.players[CURRENT_PLAYER].movePlayer(directionToPass);
-					map.myTeam.players[CURRENT_PLAYER].withBall = false;
-					BALL_PLAYER = -1;
-					PREVIOUS_BALL_PLAYER = CURRENT_PLAYER;
-					//CURRENT_PLAYER = k;
+					map.passToPlayer();
 				}
+
 			}
 			default:
 				break;
@@ -106,41 +83,40 @@ int main()
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
-			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(-1, 0));
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(-1, 0));
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
-			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(1, 0));
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(1, 0));
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 		{
-			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(1, -1));
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(1, -1));
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		{
-			map.myTeam.players[CURRENT_PLAYER].movePlayer(Vector2(-1, 1));
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(-1, 1));
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && map.myTeam.players[CURRENT_PLAYER].velocity.len() != 0)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && map.myTeam.players[map.myTeam.currentPlayer].velocity.len() != 0)
 		{
-			map.myTeam.players[CURRENT_PLAYER].acceleratePlayer();
+			map.myTeam.players[map.myTeam.currentPlayer].acceleratePlayer();
 		}
 
 		dt = time.asSeconds() - last_time;
 		map.update(dt);
 
-		//IT IS ESSENTIAL to create structure Draw
 		window.setView(map.camera.view);
 		window.clear(sf::Color::Black);
 		window.draw(field);
-		drawTeam(map.myTeam.players, window, pointer, true);
-		drawTeam(map.opponentTeam.players, window, pointer, false);
+		drawTeam(map.myTeam, window, pointer, true);
+		drawTeam(map.opponentTeam, window, pointer, false);
 		drawBall(map.ball, window);
 		window.draw(text);
 		window.display();
 
 		last_time = time.asSeconds();
-		
 	}
+
 	return 0;
 }

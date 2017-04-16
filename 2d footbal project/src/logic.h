@@ -10,6 +10,39 @@ const int MAX_PLAYER_VELOCITY = 150;
 const int PLAYERS_AMOUNT = 6;
 const float V = 70;
 
+/*			it is only example of a struct Action. Begin			*/
+
+struct Action
+{
+	virtual void doAction() = 0;
+};
+
+struct Move: public Action
+{
+	void doAction() {};
+};
+
+struct Stop	: public Action
+{
+	void doAction() {};
+};
+
+struct Pass : public Action
+{
+	void doAction() {};
+};
+
+/*			it is only example of a struct Action. End			*/
+
+struct PlayerTextures
+{
+	sf::Texture stop;
+	std::vector<sf::Texture> left;
+	std::vector<sf::Texture> right;
+	std::vector<sf::Texture> up;
+	std::vector<sf::Texture> down;
+};
+
 struct Ball
 {
 	Vector2 pos;
@@ -22,6 +55,7 @@ struct Ball
 	sf::Texture texture;
 
 	void createBall();
+	void checkFieldBoundary(const Vector2& boundary);
 	void moveBall(const Vector2 & direction); // direction must be a unit vector
 	void update(float dt);
 };
@@ -39,13 +73,14 @@ struct Player
 	bool in_zone();
 	float currentFrame;
 	float size;
-	char teamID;
 	sf::Texture texture;
-
+	
+	void setTexture(const PlayerTextures& textures);
 	void setStartPosition();
 	void movePlayer(const Vector2 & direction); // direction must be a unit vector
 	void acceleratePlayer();
 	void stopPlayer();
+	//IT IS ESSENTIAL to write function checkFieldBoundary
 	void update(float dt);
 };
 
@@ -53,9 +88,13 @@ struct Team
 {
 	std::vector<Player> players;
 	bool runToBall;
+	char currentPlayer;
+	PlayerTextures textures;
+	char teamID;
 
-	void setPositions(Ball& ball);
-	void createTeam(const char& teamID, const Vector2& fieldSize);
+	void downloadTextures();
+	void update(Ball& ball, float dt);
+	void createTeam(const char& ID, const Vector2& fieldSize);
 };
 
 struct Camera
@@ -63,17 +102,20 @@ struct Camera
 	sf::View view;
 	Vector2 pos;
 
-	void setPosition();
+	void setPosition(const Vector2& position);
 };
 
 struct Map
 {
+	bool withBall;
 	Ball ball;
 	Camera camera;
 	Team myTeam;
 	Team opponentTeam;
 	Vector2 size;
 
+	void changeCurrentPlayer();
+	void passToPlayer();
 	void createGame();
 	void update(float dt);
 
