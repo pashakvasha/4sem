@@ -25,7 +25,6 @@
     <ClCompile Include="..\..\..\src\Vector2.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\src\draw.h" />
     <ClInclude Include="..\..\..\src\logic.h" />
     <ClInclude Include="..\..\..\src\Vector2.h" />
   </ItemGroup>

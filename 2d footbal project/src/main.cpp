@@ -1,26 +1,12 @@
 #include <SFML\Graphics.hpp>
+#include <SFML\Audio.hpp>
 #include "Vector2.h"
 #include "logic.h"
-#include "draw.h"
 
-//IT IS ESSENTIAL to try delete global variables
 int PREVIOUS_BALL_PLAYER = -1;
 
 int main()
 {
-	sf::Font font;
-	font.loadFromFile("arial.ttf");
-
-	sf::Texture texturePointer;
-	texturePointer.loadFromFile("pointer.png");
-	texturePointer.setSmooth(true);
-	sf::Sprite pointer(texturePointer);
-
-	sf::Texture textureField;
-	textureField.loadFromFile("field.png");
-	textureField.setSmooth(true);
-	sf::Sprite field(textureField);
-	field.setScale(2.0f, 1.76f);
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_SIZE.x, WINDOW_SIZE.y), "My window");
 	sf::Clock clock;
@@ -31,18 +17,10 @@ int main()
 	sf::Event event;
 
 	Map map;
-	map.size = Vector2(2.0f * field.getTexture()->getSize().x, 1.76f * field.getTexture()->getSize().y);
-	map.createGame();
+	map.createField();
 
 	while (window.isOpen())
-	{	
-
-		sf::Text text("Q - change player\n D - pass to another player\n E - acceleration", font);
-		text.setCharacterSize(15);
-		text.setStyle(sf::Text::Bold);
-		text.setStyle(sf::Text::Underlined);
-		text.setColor(sf::Color::White);
-
+	{
 		
 		for (int i = 0; i < PLAYERS_AMOUNT; i++)
 		{
@@ -54,6 +32,23 @@ int main()
 
 		sf::Time time = clock.getElapsedTime();
 		sf::Event event;
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(-1, 0));
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(1, 0));
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		{
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(1, -1));
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		{
+			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(-1, 1));
+		}
 
 		while (window.pollEvent(event))
 		{
@@ -75,27 +70,15 @@ int main()
 					map.passToPlayer();
 				}
 
+				if (event.key.code == sf::Keyboard::A && map.withBall)
+				{
+					map.hit();
+				}
+
 			}
 			default:
 				break;
 			}
-		}
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		{
-			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(-1, 0));
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		{
-			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(1, 0));
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		{
-			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(1, -1));
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		{
-			map.myTeam.players[map.myTeam.currentPlayer].movePlayer(Vector2(-1, 1));
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E) && map.myTeam.players[map.myTeam.currentPlayer].velocity.len() != 0)
@@ -104,17 +87,30 @@ int main()
 		}
 
 		dt = time.asSeconds() - last_time;
+		map.time += dt;
 		map.update(dt);
 
-		window.setView(map.camera.view);
-		window.clear(sf::Color::Black);
-		window.draw(field);
-		drawTeam(map.myTeam, window, pointer, true);
-		drawTeam(map.opponentTeam, window, pointer, false);
-		drawBall(map.ball, window);
-		window.draw(text);
-		window.display();
+		map.drawField(window);		
 
+		if (map.goal)
+		{
+			sf::Text text_goal("Goooooal", map.font);
+			sf::Music music;
+			if (!music.openFromFile("goal.wav"))
+				std::cout << "ERROR";
+			text_goal.setCharacterSize(55);
+			text_goal.setStyle(sf::Text::Bold);
+			text_goal.setColor(sf::Color::Yellow);
+			text_goal.setPosition(map.camera.pos.x - text_goal.getCharacterSize(), map.camera.pos.y - text_goal.getCharacterSize());
+			window.draw(text_goal);
+			window.display();
+			music.play();
+			_sleep(2500);
+			map.time -= 2;
+			map.resetGame();
+		}
+
+		window.display();
 		last_time = time.asSeconds();
 	}
 

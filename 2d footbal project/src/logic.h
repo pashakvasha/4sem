@@ -10,29 +10,24 @@ const int MAX_PLAYER_VELOCITY = 150;
 const int PLAYERS_AMOUNT = 6;
 const float V = 70;
 
-/*			it is only example of a struct Action. Begin			*/
+struct Line
+{
+	Vector2 begin;
+	Vector2 end;
+	bool isPointOnLine(const Vector2& point);
+};
+
+enum class ActionType
+{
+	Run, Pass, ChangeCurrentPlayer, Accelerate
+};
 
 struct Action
 {
-	virtual void doAction() = 0;
+	int playerID;
+	ActionType type;
+	Vector2 dir;
 };
-
-struct Move: public Action
-{
-	void doAction() {};
-};
-
-struct Stop	: public Action
-{
-	void doAction() {};
-};
-
-struct Pass : public Action
-{
-	void doAction() {};
-};
-
-/*			it is only example of a struct Action. End			*/
 
 struct PlayerTextures
 {
@@ -58,6 +53,7 @@ struct Ball
 	void checkFieldBoundary(const Vector2& boundary);
 	void moveBall(const Vector2 & direction); // direction must be a unit vector
 	void update(float dt);
+	void drawBall(sf::RenderWindow& window);
 };
 
 struct Player
@@ -91,10 +87,13 @@ struct Team
 	char currentPlayer;
 	PlayerTextures textures;
 	char teamID;
+	int goalAmount = 0;
+	sf::Texture pointerTexture;
 
 	void downloadTextures();
 	void update(Ball& ball, float dt);
 	void createTeam(const char& ID, const Vector2& fieldSize);
+	void drawTeam(sf::RenderWindow& window);
 };
 
 struct Camera
@@ -108,15 +107,25 @@ struct Camera
 struct Map
 {
 	bool withBall;
+	bool goal;
+	float time = 0;
 	Ball ball;
 	Camera camera;
 	Team myTeam;
 	Team opponentTeam;
 	Vector2 size;
+	Line myGate;
+	Line opponentGate;
+	sf::Texture texture;
+	sf::Text scoreboard;
+	sf::Font font;
 
+	void resetGame();
+	void hit();
 	void changeCurrentPlayer();
 	void passToPlayer();
-	void createGame();
+	void createField();
 	void update(float dt);
+	void drawField(sf::RenderWindow& window);
 
 };

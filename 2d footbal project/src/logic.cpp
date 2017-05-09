@@ -20,11 +20,20 @@ char getDirection(const Vector2& v)
 	return 4; //down	
 }
 
+bool Line::isPointOnLine(const Vector2& point)
+{
+	Vector2 directionToPoint = point - begin;
+	Vector2 line = end - begin;
+	if ( abs(directionToPoint ^ line) < 500)
+		return true;
+	return false;
+}
+
 void Ball::createBall()
 {
 	texture.loadFromFile("ball.png");
 	texture.setSmooth(true);
-	pos = Vector2(500, 500);
+	pos = Vector2(640, 275);
 	angle = 0;
 	velocity = Vector2(0, 0);
 	acceleration = Vector2(0, 0);
@@ -106,6 +115,7 @@ void Player::update(float dt)
 
 void Player::setStartPosition()
 {
+	//IT IS ESSENTIAL to write normal start position
 	pos = (zone_end + zone_begin) / 2;
 }
 
@@ -152,7 +162,7 @@ void Team::createTeam(const char& ID, const Vector2& fieldSize)
 	//mildfielder
 	players[3].zone_begin = Vector2(fieldSize.x / 5, 0);
 	players[3].zone_end = Vector2(4 * fieldSize.x / 5, fieldSize.y);
-	//forward
+	//forwards
 	players[4].zone_begin = Vector2(fieldSize.x / 2 - (teamID - 1) * fieldSize.x / 2, 0);
 	players[4].zone_end = Vector2(fieldSize.x - (teamID - 1) * fieldSize.x / 2, fieldSize.y / 2);
 
@@ -234,21 +244,58 @@ void Camera::setPosition(const Vector2& position)
 		pos.x = 400;
 	if (pos.x >= 880)
 		pos.x = 880;
-	view.setCenter(pos.x, WINDOW_SIZE.y / 2);
+	pos.y = WINDOW_SIZE.y / 2;
+	view.setCenter(pos.x, pos.y);
+}
+
+void Map::hit()
+{
+	Vector2 directionToGate = Vector2( (opponentGate.begin + opponentGate.end) / 2 - myTeam.players[myTeam.currentPlayer].pos).norm();
+	ball.moveBall(directionToGate);
+
+	myTeam.players[myTeam.currentPlayer].movePlayer(directionToGate);
+	myTeam.players[myTeam.currentPlayer].withBall = false;
+	withBall = false;
+	PREVIOUS_BALL_PLAYER = myTeam.currentPlayer;
 }
 
 void Map::passToPlayer()
 {
-	int k = rand() % PLAYERS_AMOUNT;
-	while (k == myTeam.currentPlayer)
-	{
-		k = rand() % PLAYERS_AMOUNT;
-	}
-
-	Vector2 directionToPass = (myTeam.players[k].pos - myTeam.players[myTeam.currentPlayer].pos).norm();
-	ball.moveBall(directionToPass);
-
-	myTeam.players[myTeam.currentPlayer].movePlayer(directionToPass);
+	Vector2 dir = myTeam.players[myTeam.currentPlayer].velocity;
+	std::cout << dir << std::endl;
+	double cos[PLAYERS_AMOUNT - 1];
+	int in_zone[PLAYERS_AMOUNT - 1];
+	int k = 0;
+	int min;
+	double k_min = -1;
+	Vector2 ans;
+	for (int i = 0; i < PLAYERS_AMOUNT; i++)
+		if (i != myTeam.currentPlayer)
+		{
+			cos[i] = (dir * (myTeam.players[i].pos - ball.pos)) / (dir.len() * (myTeam.players[i].pos - ball.pos).len());
+			if (cos[i] > k_min)
+			{
+				k_min = cos[i];
+				min = i;
+			}
+			if ((cos[i] >= 0.7) && (cos[i] <= 1))
+			{
+				in_zone[k] = i;
+				k++;
+			}
+		}
+	float len = size.len();
+	if (k != 0)
+		for (int i = 0; i < k; i++)
+		{
+			if ((myTeam.players[i].pos - ball.pos).len() < len)
+			{
+				len = (myTeam.players[in_zone[i]].pos - ball.pos).len();
+				min = in_zone[i];
+			}
+		}
+	ans = myTeam.players[min].pos - ball.pos;
+	ball.moveBall(ans.norm());
 	myTeam.players[myTeam.currentPlayer].withBall = false;
 	withBall = false;
 	PREVIOUS_BALL_PLAYER = myTeam.currentPlayer;
@@ -258,22 +305,62 @@ void Map::changeCurrentPlayer()
 {
 	if (!withBall)
 	{
-		myTeam.currentPlayer++;
-		if (myTeam.currentPlayer >= PLAYERS_AMOUNT)
-			myTeam.currentPlayer = 0;
+		float distance = size.len();
+		float current_distance;
+		for (int i = 0; i < PLAYERS_AMOUNT; i++)
+			if (i != myTeam.currentPlayer)
+			{
+				current_distance = (myTeam.players[i].pos - ball.pos).len();
+				if (distance > current_distance)
+				{
+					distance = current_distance;
+					myTeam.currentPlayer = i;
+				}
+			}
 	}
 	else
 		myTeam.currentPlayer = myTeam.currentPlayer;
 }
 
-void Map::createGame()
+void Map::createField()
 {
+	font.loadFromFile("arial.ttf");
+
+	texture.loadFromFile("field.png");
+	texture.setSmooth(true);
+	size = Vector2(2.0f * texture.getSize().x, 1.76f * texture.getSize().y);
+
+	myTeam.pointerTexture.loadFromFile("pointer.png");
+	myTeam.pointerTexture.setSmooth(true);
+
+
+	myGate.begin = Vector2(70, 320);
+	myGate.end = Vector2(100, 230);
+
+	opponentGate.begin = Vector2(1210, 315);
+	opponentGate.end = Vector2(1180, 230);
+
 	camera.view.reset(sf::FloatRect(0, 0, WINDOW_SIZE.x, WINDOW_SIZE.y));
 	myTeam.createTeam(1, size); // The first argument is teamID
 	opponentTeam.createTeam(2, size);
 	withBall = false;
+	goal = false;
 	myTeam.currentPlayer = 0;
 	ball.createBall();
+}
+
+void Map::resetGame()
+{
+	ball.createBall();
+	goal = false;
+	withBall = false;
+	myTeam.currentPlayer = 0;
+	PREVIOUS_BALL_PLAYER = -1;
+	for (size_t i = 0; i < myTeam.players.size(); i++)
+	{
+		myTeam.players[i].setStartPosition();
+		opponentTeam.players[i].setStartPosition();
+	}
 }
 
 void Map::update(float dt)
@@ -327,7 +414,18 @@ void Map::update(float dt)
 		ball.velocity = myTeam.players[myTeam.currentPlayer].velocity;
 	}
 
-	
+	if ( myGate.isPointOnLine(ball.pos) && (ball.pos.x >= 70) && (ball.pos.x <= 100) & (ball.pos.y >= 230) && (ball.pos.y <= 320))
+	{
+		goal = true;
+		opponentTeam.goalAmount++;
+	}
+
+	if (opponentGate.isPointOnLine(ball.pos) && (ball.pos.x >= 1180) && (ball.pos.x <= 1210) & (ball.pos.y >= 230) && (ball.pos.y <= 315))
+	{
+		goal = true;
+		myTeam.goalAmount++;
+	}
+
 	ball.checkFieldBoundary(size);
 	ball.update(dt);
 

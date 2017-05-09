@@ -2,19 +2,41 @@
 #include "Vector2.h"
 #include "logic.h"
 
-void drawTeam(const Team& team, sf::RenderWindow& window, sf::Sprite & pointer, bool isOurTeam)
+void Map::drawField(sf::RenderWindow& window)
 {
-	for (int i = 0; i < team.players.size(); i++)
-	{
-		sf::Sprite man(team.players[i].texture);
-		man.setPosition(team.players[i].pos.x, team.players[i].pos.y);
-		man.setScale(team.players[i].size, team.players[i].size);
-		man.setOrigin(team.players[i].texture.getSize().x / 2, team.players[i].texture.getSize().x / 2);
+	scoreboard = sf::Text("You " + std::to_string(myTeam.goalAmount) + " : " + std::to_string(opponentTeam.goalAmount) + " Opponent\nTime: " + std::to_string((int)time / 2), font);
+	scoreboard.setCharacterSize(15);
+	scoreboard.setStyle(sf::Text::Bold);
+	scoreboard.setStyle(sf::Text::Underlined);
+	scoreboard.setColor(sf::Color::White);
+	scoreboard.setPosition(camera.pos.x - WINDOW_SIZE.x / 2 + scoreboard.getCharacterSize(), camera.pos.y - WINDOW_SIZE.y / 2 + scoreboard.getCharacterSize());
 
-		if (i == team.currentPlayer && isOurTeam)
+	sf::Sprite field(texture);
+	field.setScale(2.0f, 1.76f);
+	window.setView(camera.view);
+	window.clear(sf::Color::Black);
+	window.draw(field);
+	myTeam.drawTeam(window);
+	opponentTeam.drawTeam(window);
+	ball.drawBall(window);
+	window.draw(scoreboard);
+
+}
+
+void Team::drawTeam(sf::RenderWindow& window)
+{
+	sf::Sprite pointer(pointerTexture);
+	for (int i = 0; i < players.size(); i++)
+	{
+		sf::Sprite man(players[i].texture);
+		man.setPosition(players[i].pos.x, players[i].pos.y);
+		man.setScale(players[i].size, players[i].size);
+		man.setOrigin(players[i].texture.getSize().x / 2, players[i].texture.getSize().x / 2);
+
+		if (i == currentPlayer)
 		{
-			pointer.setPosition(team.players[i].pos.x, team.players[i].pos.y - team.players[i].radius.y - 0.3 * team.players[i].size * pointer.getTexture()->getSize().y);
-			pointer.setScale(0.3 * team.players[i].size, 0.3 * team.players[i].size);
+			pointer.setPosition(players[i].pos.x, players[i].pos.y - players[i].radius.y - 0.3 * players[i].size * pointer.getTexture()->getSize().y);
+			pointer.setScale(0.3 * players[i].size, 0.3 * players[i].size);
 			window.draw(pointer);
 		}
 
@@ -22,12 +44,12 @@ void drawTeam(const Team& team, sf::RenderWindow& window, sf::Sprite & pointer, 
 	}
 }
 
-void drawBall(const Ball ball, sf::RenderWindow& window)
+void Ball::drawBall(sf::RenderWindow& window)
 {
-	sf::Sprite ballSprite(ball.texture);
-	ballSprite.setScale(0.1 * ball.size, 0.1 * ball.size);
-	ballSprite.setOrigin(ball.texture.getSize().x / 2, ball.texture.getSize().y / 2);
-	ballSprite.setPosition(ball.pos.x, ball.pos.y);
-	ballSprite.setRotation(ball.angle);
+	sf::Sprite ballSprite(texture);
+	ballSprite.setScale(0.1 * size, 0.1 * size);
+	ballSprite.setOrigin(texture.getSize().x / 2, texture.getSize().y / 2);
+	ballSprite.setPosition(pos.x, pos.y);
+	ballSprite.setRotation(angle);
 	window.draw(ballSprite);
 }
